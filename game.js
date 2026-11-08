@@ -19,9 +19,9 @@
     crow: [S('crow1'), S('crow2')], crows: S('crows'), flap: S('flap'), glass: [S('glass1'), S('glass2'), S('glass3')], chime: S('chime'),
     howl: [S('howl1'), S('howl2')], bark: S('bark'), zap: S('zap'), snap: S('snap'), creak: S('creak'), rubble: S('rubble'), station: S('station'),
     whistle: S('whistle'), siren: S('siren'), crack: [S('crack1'), S('crack2')], boom: S('boom'), clap: S('clap'), giggle: S('giggle'), cat: S('cat'),
-    jinBig: S('jin_big'), jinMeh: S('jin_meh'), jinMid: S('jin_mid'), ufo: S('ufo'), slam: S('slam'), tick: S('tick'), go: S('go'),
+    jinBig: S('jin_big'), jinMeh: S('jin_meh'), jinMid: S('jin_mid'), ufo: S('ufo'), slam: S('slam'), tick: S('tick'), go: S('go'), drumroll: S('drumroll'),
   })
-  const AMB = S('amb_street'), BIRDS = S('amb_birds'), BGM = S('bgm_title')
+  const AMB = S('amb_street'), BIRDS = S('amb_birds'), BGM = S('bgm_title'), CRICKET = S('cricket')
   let muted = LS.get('ar_mute') === '1'
   Snd.setMute(muted)
   function bedOn(withBgm) {
@@ -31,7 +31,7 @@
   function bedOff() { Snd.loop('amb', null, 0, 0.15); Snd.loop('birds', null, 0, 0.15); Snd.loop('bgm', null, 0, 0.15) }
 
   // 読み込み（最初に要る音を先に取ってくる。本物の件数でバーが進む。12秒で必ず消す）
-  const preUrls = [...new Set(Object.values(Snd.files).flat().concat([AMB, BIRDS]))]
+  const preUrls = [...new Set(Object.values(Snd.files).flat().concat([AMB, BIRDS, CRICKET]))]
   Snd.pre = {}
   let loaded = 0, bootDone = false
   function bootProgress() { $('loadBar').firstElementChild.style.width = Math.round(100 * loaded / (preUrls.length + 1)) + '%' }
@@ -55,7 +55,7 @@
   }
   addEventListener('resize', resize); resize()
 
-  const views = ['vTitle', 'vSing', 'vShow', 'vResult']
+  const views = ['vTitle', 'vSing', 'vSus', 'vShow', 'vResult']
   function show(id) { for (const v of views) $(v).hidden = v !== id }
   function modal(id, on) { $(id).hidden = !on }
   let toastT = 0
@@ -67,9 +67,10 @@
     rings: [], leaves: [], parts: [], crows: [], dogs: 0, speaker: 0, angry: 0, bubble: null, broken: 0, cutWires: 0, blackout: 0,
     sway: 0, train: { x: -900, v: 0, stop: false, spark: 0 }, moonZoom: 0, moonCrack: 0, earthCrack: 0, earthBoom: 0, encore: 0,
     ufo: null, catState: 'sit', catT: 0, earsCover: 0, clap: 0, shrug: 0, cans: 0, yawn: 0, sing: 0,
+    hold: 0, peek: 0, fur: 0, needle: null, susv: null,
   }
   function resetWorld() {
-    Object.assign(V, { level: 0, lvRaw: 0, hype: 0, zoom: 1, camY: 0, shake: 0, flash: 0, dark: 0, redSky: 0, space: 0, dogs: 0, speaker: 0, angry: 0, bubble: null, broken: 0, cutWires: 0, blackout: 0, sway: 0, moonZoom: 0, moonCrack: 0, earthCrack: 0, earthBoom: 0, encore: 0, ufo: null, catState: 'sit', earsCover: 0, clap: 0, shrug: 0, cans: 0, yawn: 0, sing: 0 })
+    Object.assign(V, { level: 0, lvRaw: 0, hype: 0, zoom: 1, camY: 0, shake: 0, flash: 0, dark: 0, redSky: 0, space: 0, dogs: 0, speaker: 0, angry: 0, bubble: null, broken: 0, cutWires: 0, blackout: 0, sway: 0, moonZoom: 0, moonCrack: 0, earthCrack: 0, earthBoom: 0, encore: 0, ufo: null, catState: 'sit', earsCover: 0, clap: 0, shrug: 0, cans: 0, yawn: 0, sing: 0, hold: 0, peek: 0, fur: 0, needle: null, susv: null })
     V.rings = []; V.leaves = []; V.parts = []
     V.train = { x: -900, v: 0, stop: false, spark: 0 }
     later.length = 0; tweens.length = 0
@@ -231,7 +232,9 @@
     // カラス
     for (const c of V.crows) {
       const wireY = top + 26 + 22 + c.x * 0.02
-      g.save(); g.translate(c.x, wireY + c.y - Math.abs(Math.sin(c.hop)) * 6); g.rotate(c.rot)
+      const hov = c.fall ? 0 : V.hold * (16 + (c.ph % 3) * 5)
+      g.save(); g.translate(c.x, wireY + c.y - hov - Math.abs(Math.sin(c.hop)) * 6); g.rotate(c.rot)
+      if (hov > 3) { g.beginPath(); g.moveTo(-5, -12); g.lineTo(-16, -30 - (c.ph % 2) * 4); g.lineTo(2, -15); g.closePath(); P('#1d1a22', '#000', 1); g.beginPath(); g.moveTo(-1, -13); g.lineTo(6, -33); g.lineTo(5, -14); g.closePath(); P('#2a2630', '#000', 1) }
       ell(0, -9, 9, 7); P('#1d1a22', '#000', 1)
       g.beginPath(); g.arc(7, -17, 5, 0, 7); P('#1d1a22', '#000', 1)
       g.beginPath(); g.moveTo(11, -18); g.lineTo(18, -16); g.lineTo(11, -15); P('#3a3640', null)
@@ -287,12 +290,20 @@
     g.save(); g.translate(x, y)
     if (V.catState === 'gone') { g.restore(); return }
     const flat = V.level > 0.5 || V.hype > 0.5
-    ell(0, -10, 14, 10); P('#e6a24a')
+    const fur = V.fur
+    if (fur > 0.05) {
+      g.beginPath(); const n = 22
+      for (let i = 0; i <= n; i++) { const a = Math.PI + (i / n) * Math.PI, r = i % 2 ? 1 : 1 + 0.45 * fur + Math.sin(V.t * 40 + i) * 0.04 * fur; const X = Math.cos(a) * 14 * r, Y = -10 - fur * 4 + Math.sin(a) * 10 * r; i ? g.lineTo(X, Y) : g.moveTo(X, Y) }
+      g.closePath(); P('#e6a24a', INK, 1.4)
+      g.beginPath(); g.moveTo(-12, -10); g.lineTo(-16 + Math.sin(V.t * 30) * fur, -40 * fur - 6); P(null, INK, 6 + fur * 6); g.beginPath(); g.moveTo(-12, -10); g.lineTo(-16 + Math.sin(V.t * 30) * fur, -40 * fur - 6); P(null, '#e6a24a', 4 + fur * 6)
+    }
+    ell(0, -10 - fur * 4, 14, 10); P('#e6a24a')
     g.beginPath(); g.arc(12, -22, 8, 0, 7); P('#e6a24a')
     g.beginPath(); if (flat) { g.moveTo(6, -27); g.lineTo(2, -30); g.lineTo(9, -30); g.moveTo(15, -28); g.lineTo(20, -31); g.lineTo(19, -26) } else { g.moveTo(6, -27); g.lineTo(7, -36); g.lineTo(11, -29); g.moveTo(14, -29); g.lineTo(19, -36); g.lineTo(19, -26) } P('#e6a24a')
     if (V.yawn > 0) { ell(14, -19, 2.5, 3 * V.yawn); P('#7b2a28', INK, 1) }
-    g.fillStyle = INK; g.fillRect(9, -24, 2, flat ? 1 : 2.5); g.fillRect(15, -24, 2, flat ? 1 : 2.5)
-    g.beginPath(); g.moveTo(-13, -8); g.quadraticCurveTo(-26, -4, -22, 10 + Math.sin(V.t * 3) * 3); P(null, '#e6a24a', 4); g.beginPath(); g.moveTo(-13, -8); g.quadraticCurveTo(-26, -4, -22, 10 + Math.sin(V.t * 3) * 3); P(null, INK, 1)
+    if (fur > 0.3) { g.fillStyle = '#fff'; g.beginPath(); g.arc(10, -23.5, 2.6, 0, 7); g.arc(16, -23.5, 2.6, 0, 7); g.fill(); g.fillStyle = INK; g.fillRect(9.5, -24, 1.2, 1.2); g.fillRect(15.5, -24, 1.2, 1.2) }
+    else { g.fillStyle = INK; g.fillRect(9, -24, 2, flat ? 1 : 2.5); g.fillRect(15, -24, 2, flat ? 1 : 2.5) }
+    if (fur <= 0.05) { g.beginPath(); g.moveTo(-13, -8); g.quadraticCurveTo(-26, -4, -22, 10 + Math.sin(V.t * 3) * 3); P(null, '#e6a24a', 4); g.beginPath(); g.moveTo(-13, -8); g.quadraticCurveTo(-26, -4, -22, 10 + Math.sin(V.t * 3) * 3); P(null, INK, 1) }
     g.restore()
   }
   function drawGrandma(x, y) {
@@ -303,6 +314,15 @@
     g.beginPath(); g.arc(0, -96, 13, Math.PI, 0); P('#c9c6cf'); g.beginPath(); g.arc(0, -108, 6, 0, 7); P('#c9c6cf')
     g.strokeStyle = INK; g.lineWidth = 1.4; g.beginPath(); g.arc(-5, -90, 3.5, 0, 7); g.arc(5, -90, 3.5, 0, 7); g.stroke()
     const e = V.earsCover, cl = V.clap
+    if (V.peek > 0.3) {
+      const open = Math.sin(V.t * 2.3) > 0.2 ? 1 : 0, dy = open * 7
+      g.beginPath(); g.moveTo(-12, -66); g.lineTo(-11, -84); P(null, '#7d5a8c', 7); g.beginPath(); g.moveTo(12, -66); g.lineTo(11, -84 + dy); P(null, '#7d5a8c', 7)
+      ell(-5, -90, 6, 7); P('#efc9a4', INK, 1.2); ell(6, -90 + dy, 6, 7); P('#efc9a4', INK, 1.2)
+      g.strokeStyle = 'rgba(35,31,43,.5)'; g.lineWidth = 0.9; g.beginPath(); for (const fx of [-7, -4, -1]) { g.moveTo(fx, -96); g.lineTo(fx, -86) } g.stroke()
+      if (open) { g.fillStyle = INK; g.beginPath(); g.arc(5, -91, 1.4, 0, 7); g.fill() }
+      g.beginPath(); g.arc(0, -79, 2, 0, 7); P('#7b2a28', INK, 1)
+      g.restore(); return
+    }
     if (e > 0.3) { g.beginPath(); g.moveTo(-12, -66); g.lineTo(-16, -84); P(null, '#7d5a8c', 7); g.beginPath(); g.moveTo(12, -66); g.lineTo(16, -84); P(null, '#7d5a8c', 7); ell(-14, -88, 4, 5); P('#efc9a4', INK, 1.2); ell(14, -88, 4, 5); P('#efc9a4', INK, 1.2) }
     else { const c = cl > 0 ? Math.abs(Math.sin(V.t * 6)) * 6 : 0; g.beginPath(); g.moveTo(-10, -60); g.lineTo(-4 + c, -50); P(null, '#7d5a8c', 7); g.beginPath(); g.moveTo(10, -60); g.lineTo(4 - c, -50); P(null, '#7d5a8c', 7) }
     g.beginPath(); if (e > 0.3) { g.moveTo(-4, -82); g.lineTo(4, -82) } else { g.arc(0, -84, 3, 0.2, Math.PI - 0.2) } P(null, INK, 1.4)
@@ -315,7 +335,7 @@
     g.beginPath(); g.arc(0, -74, 12, 0, 7); P('#f0c49c')
     g.beginPath(); g.arc(0, -78, 12, Math.PI, 0); P('#d2453a'); rr(0, -80, 18, 4, 2); P('#d2453a')
     g.fillStyle = INK; g.fillRect(-5, -75, 2, 2.5); g.fillRect(3, -75, 2, 2.5)
-    const up = V.shrug > 0 ? 1 : 0
+    const up = V.shrug > 0 ? 1 : -V.peek * 5.5
     // リクエストの紙を両手で上げる
     g.beginPath(); g.moveTo(-10, -56); g.lineTo(-18, -84 - up * 4); g.moveTo(10, -56); g.lineTo(18, -84 - up * 4); P(null, '#3a8a6a', 6)
     g.save(); g.translate(0, -100 - up * 4); g.rotate(-0.06)
@@ -337,7 +357,7 @@
     rr(-20, -46, 40, 46, 3); P('#26232c')
     g.fillStyle = '#3c3843'; for (let i = 0; i < 4; i++) g.fillRect(-15, -22 + i * 5, 30, 2.5)
     rr(-14, -42, 28, 14, 2); P('#f3e9c9', INK, 1.2)
-    const na = -1.0 + m * 2.0
+    const na = V.needle != null ? V.needle : -1.0 + m * 2.0
     g.strokeStyle = '#c4302b'; g.lineWidth = 1.6; g.beginPath(); g.moveTo(0, -29); g.lineTo(Math.sin(na) * 11, -29 - Math.cos(na) * 11); g.stroke()
     g.restore()
     // マイクのコード
@@ -491,6 +511,45 @@
     }
     drawUfo()
   }
+  // 判定マシン: 画面の下にアンプのメーターと地震計の紙。文字は描かない
+  function drawMachine() {
+    const S = V.susv
+    g.setTransform(DPR, 0, 0, DPR, 0, 0)
+    const h = clamp((H - GY()) * 0.6, 96, 150), x0 = 12, w = W - 24
+    const y0 = H - h - 34 + (1 - ease(S.in)) * (h + 50) + (Math.random() - 0.5) * V.shake * 6
+    rr(x0, y0, w, h, 10); P('#26232c', INK, 2.5)
+    g.fillStyle = '#3c3843'; for (let i = 0; i < 3; i++) g.fillRect(x0 + 10, y0 + h - 8 - i * 4, w * 0.18, 2)
+    for (const [sx, sy] of [[x0 + 6, y0 + 6], [x0 + w - 6, y0 + 6], [x0 + 6, y0 + h - 6], [x0 + w - 6, y0 + h - 6]]) { g.beginPath(); g.arc(sx, sy, 2, 0, 7); g.fillStyle = '#8a8f98'; g.fill() }
+    // メーター
+    const mh = h - 22, mw = Math.min(mh * 1.3, w * 0.4), mx = x0 + 11, my = y0 + 11
+    rr(mx, my, mw, mh, 6); P('#f3e9c9', INK, 1.6)
+    const px = mx + mw / 2, py = my + mh - 10, r = Math.min(mw * 0.44, mh * 0.78)
+    g.strokeStyle = INK; g.lineWidth = 1.4
+    for (let i = 0; i <= 10; i++) { const a = -1 + i * 0.2, r0 = r * (i % 5 ? 0.86 : 0.8); g.beginPath(); g.moveTo(px + Math.sin(a) * r0, py - Math.cos(a) * r0); g.lineTo(px + Math.sin(a) * r, py - Math.cos(a) * r); g.stroke() }
+    g.strokeStyle = S.pinned && Math.floor(V.t * 12) % 2 ? '#ff3b2f' : '#c4302b'; g.lineWidth = 5
+    g.beginPath(); g.arc(px, py, r * 0.93, -Math.PI / 2 + 0.45, -Math.PI / 2 + 1.0); g.stroke()
+    const na = clamp(S.needle, -1.15, 1.15)
+    g.strokeStyle = '#1d1a22'; g.lineWidth = 2.6; g.lineCap = 'round'; g.beginPath(); g.moveTo(px, py); g.lineTo(px + Math.sin(na) * r * 0.98, py - Math.cos(na) * r * 0.98); g.stroke()
+    g.beginPath(); g.arc(px, py, 4, 0, 7); P('#26232c', null)
+    // 地震計の紙
+    const sx = mx + mw + 9, sw = x0 + w - 9 - sx, sy = my, sh = mh, cy = sy + sh / 2
+    rr(sx, sy, sw, sh, 3); P('#fbf8f0', INK, 1.4)
+    g.save(); rr(sx, sy, sw, sh, 3); g.clip()
+    g.strokeStyle = 'rgba(196,48,43,.16)'; g.lineWidth = 1
+    for (let y = cy % 12; y < sy + sh; y += 12) { g.beginPath(); g.moveTo(sx, y); g.lineTo(sx + sw, y); g.stroke() }
+    const off = S.scroll % 14
+    for (let x = sx + sw - off; x > sx; x -= 14) { g.beginPath(); g.moveTo(x, sy); g.lineTo(x, sy + sh); g.stroke() }
+    g.strokeStyle = 'rgba(35,31,43,.35)'; g.beginPath(); g.moveTo(sx, cy); g.lineTo(sx + sw, cy); g.stroke()
+    g.restore()
+    const penX = sx + sw * 0.86, dx = (penX - sx) / 175, tr = S.trace, amp = sh * 0.42
+    g.save(); g.beginPath(); g.rect(sx, 0, sw, H); g.clip()   // 横は紙の中・縦は紙からはみ出してよい（振り切れ）
+    g.strokeStyle = '#2b2f55'; g.lineWidth = 1.6; g.lineJoin = 'round'; g.beginPath()
+    for (let i = 0; i < tr.length; i++) { const X = penX - (tr.length - 1 - i) * dx, Y = cy - tr[i] * amp; i ? g.lineTo(X, Y) : g.moveTo(X, Y) }
+    g.stroke(); g.restore()
+    const lastY = cy - (tr.length ? tr[tr.length - 1] : 0) * amp
+    g.strokeStyle = '#151318'; g.lineWidth = 2.4; g.beginPath(); g.moveTo(penX + 22, sy - 4); g.lineTo(penX, lastY); g.stroke()
+    g.beginPath(); g.arc(penX, lastY, 2.6, 0, 7); g.fillStyle = '#c4302b'; g.fill()
+  }
   function drawUfo() {
     if (!V.ufo) return
     g.setTransform(DPR, 0, 0, DPR, 0, 0)
@@ -510,6 +569,7 @@
       layer(0.3); for (const h of HOUSES) drawHouse(h)
       drawPolesAndWires(); drawLot(); drawFx()
       if (V.ufo && V.space < 1) drawUfo()
+      if (V.susv) drawMachine()
       if (V.dark > 0) { g.setTransform(DPR, 0, 0, DPR, 0, 0); g.fillStyle = `rgba(20,10,40,${V.dark * 0.35})`; g.fillRect(0, 0, W, H) }
     }
     if (V.space > 0) { if (V.space < 1) { g.save(); g.globalAlpha = V.space; drawSpace(); g.restore() } else drawSpace() }
@@ -548,6 +608,7 @@
     for (let i = tweens.length - 1; i >= 0; i--) { const w = tweens[i], k = Math.min(1, (V.t - w.t0) / w.d); try { w.fn(k) } catch (e) {} if (k >= 1) tweens.splice(i, 1) }
     // 台本
     if (show_ && show_.next) show_.tick(DT)
+    if (sus_) sus_.tick(DT)
     if (singer_) singer_(DT)
   }
   let paused = false, acc = 0, last = performance.now()
@@ -575,6 +636,7 @@
     if (lastR) fillResult(lastR)
   }
   function goTitle() {
+    if (sus_) sus_.cancel(); Snd.loop('cricket', null, 0, 0.2)
     stopReplay(); show('vTitle'); V.mode = 'title'; resetWorld(); V.hype = 0
     if (Snd.ctx) bedOn(true)
     singer_ = idleSinger
@@ -665,11 +727,11 @@
     }
     tick()
   }
-  let recT0 = 0, fingerSamples = [], finger = { down: false, x: 0, y: 0, p: 0, lx: 0, ly: 0, speed: 0 }
+  let recT0 = 0, levelHist = [], fingerSamples = [], finger = { down: false, x: 0, y: 0, p: 0, lx: 0, ly: 0, speed: 0 }
   function startRecording() {
     V.mode = 'sing'; $('singCue').textContent = T('sing'); $('singCue').hidden = false
     $('recBar').hidden = false; $('recBar').classList.add('on')
-    recT0 = performance.now(); fingerSamples = []
+    recT0 = performance.now(); fingerSamples = []; levelHist = []
     if (mode === 'mic') { pcm = []; pcmN = 0; mrChunks = []; recording = true; try { if (mr && mr.state === 'inactive') mr.start() } catch (e) {} }
     let el = 0
     singer_ = dt => {
@@ -681,6 +743,7 @@
         finger.speed *= 0.85
       }
       const target = V.lvRaw
+      levelHist.push(V.lvRaw)
       V.level += (target - V.level) * (target > V.level ? 0.5 : 0.15)
       if (el > 0.7) $('singCue').hidden = true
       const left = Math.max(0, 5 - el)
@@ -691,10 +754,12 @@
   async function endRecording() {
     $('recBar').classList.remove('on'); $('bHeart').hidden = true; $('fingerTip').hidden = true
     V.mode = 'judge'; V.level = 0
-    let R
+    const sus = startSuspense()
+    await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)))   // 判定マシンを1枚描いてから分析する
+    let R, wave
     if (mode === 'finger') {
       const f = AN.fromFinger(fingerSamples, 5)
-      R = makeResult(f, true)
+      R = makeResult(f, true); wave = waveFromHist(levelHist)
     } else {
       recording = false
       const sr = recSR
@@ -706,14 +771,14 @@
       if (x) { let pk = 0; for (let i = 0; i < x.length; i += 8) { const v = Math.abs(x[i]); if (v > pk) pk = v } if (pk < 0.003 && blob) { window.__pcmSilent = pk; x = null } }
       if (!x && blob) { try { const buf = await decode(await blob.arrayBuffer()); srx = buf.sampleRate; x = buf.getChannelData(0).slice(0, Math.round(srx * 5)); recBuf = buf } catch (e) { x = null } }
       stopCapture()
-      if (!x) { window.__recFail = (window.__recFail || 0) + 1; goTitle(); denied(T('recFailB'), T('recFailT')); return }
+      if (!x) { sus.cancel(); window.__recFail = (window.__recFail || 0) + 1; goTitle(); denied(T('recFailB'), T('recFailT')); return }
       if (!recBuf && Snd.ctx) { try { recBuf = Snd.ctx.createBuffer(1, x.length, srx); recBuf.getChannelData(0).set(x) } catch (e) { recBuf = null } }
       window.__lastPath = pcmN >= sr * 1.5 ? 'pcm' : 'recorder'
       const f = AN.analyze(x, srx)
-      R = makeResult(f, false)
+      R = makeResult(f, false); wave = waveFromPcm(x)
     }
     pcm = []
-    runShow(R)
+    sus.ready(R, wave)
   }
   function stopMr() {
     return new Promise(res => {
@@ -736,6 +801,117 @@
     R.subI = Math.floor(Math.random() * src.subJa.length); R.subSrc = j.kind === 'tier' ? 't' + j.tier : j.kind
     window.__lastResult = { kind: R.kind, tier: R.tier, D: R.D, gauges: R.gauges, reqOk: R.reqOk, request, finger: isFinger, medianHz: Math.round(f.medianHz || 0) }
     return R
+  }
+
+  // ---------------- 判定の間（歌い終わってから結果まで） ----------------
+  // 判定マシン（アンプのメーター＋地震計の紙）に自分の声の波形が描かれ、町じゅうが息をのむ。結果によって溜め方を変える（ネタバレはしない）
+  //  tier: 揺れが段に比例して強くなり、針が振り切れてドンと入る / good: 溜めた末にしぼむ（ドラムロールが途切れてカラスがアホーと鳴く）
+  //  none: 針がほとんど動かず、コオロギが鳴くだけ
+  let sus_ = null, drumNode = null
+  function waveFromPcm(x) {
+    const n = 160, step = Math.max(1, Math.floor(x.length / n)), out = new Float32Array(n)
+    for (let i = 0; i < n; i++) { let pk = 0; for (let j = i * step, e = Math.min(x.length, j + step); j < e; j += 3) { const v = Math.abs(x[j]); if (v > pk) pk = v } out[i] = Math.min(1, Math.sqrt(pk / 0.5)) }
+    return out
+  }
+  function waveFromHist(h) {
+    const n = 160, out = new Float32Array(n); if (!h.length) return out
+    for (let i = 0; i < n; i++) { const a = Math.floor(i / n * h.length), b = Math.max(a + 1, Math.floor((i + 1) / n * h.length)); let m = 0; for (let j = a; j < b && j < h.length; j++) m = Math.max(m, h[j]); out[i] = clamp(m, 0, 1) }
+    return out
+  }
+  function stopDrum() { if (drumNode) { try { drumNode.stop() } catch (e) {} drumNode = null } }
+  function startSuspense() {
+    stopDrum(); Snd.loop('cricket', null, 0, 0.1)
+    show('vSus'); V.mode = 'sus'; singer_ = () => { V.level *= 0.85 }
+    const sign = $('susSign'); sign.className = ''; $('susTxt').textContent = T('judging'); $('susSkip').textContent = T('skip')
+    const S = V.susv = { in: 0, trace: [], needle: -1, scroll: 0, pinned: 0, kind: null }
+    let el = 0, t = -1, R = null, wave = null, variant = null, I = 0, frame = 0, done = false, wantSkip = false, lastIdx = 0
+    const TW = 2.2, HIT = variant => variant === 'none' ? 2.5 : variant === 'good' ? 3.1 : 3.0
+    const log = window.__sus = { started: performance.now(), variant: null, skipped: false, ended: 0 }
+    const go = () => {
+      if (done) return; done = true; sus_ = null; stopDrum()
+      log.ended = performance.now(); log.dur = +(t > 0 ? t : 0).toFixed(2)
+      V.susv = null; V.needle = null; V.hold = 0; V.peek = 0; V.fur = 0
+      runShow(R)
+    }
+    const push = v => { S.trace.push(v); if (S.trace.length > 240) S.trace.shift() }
+    const sus = sus_ = {
+      cancel() { done = true; sus_ = null; stopDrum(); V.susv = null; V.needle = null; V.hold = 0; V.peek = 0; V.fur = 0 },
+      ready(r, w) {
+        R = r; wave = w; variant = R.kind === 'tier' ? 'tier' : R.kind; log.variant = variant; log.tier = R.kind === 'tier' ? R.tier : null; S.kind = variant
+        I = variant === 'none' ? 0 : variant === 'good' ? 0.55 : 0.3 + R.tier * 0.07
+        if (wantSkip) sus.skip()
+      },
+      skip() {
+        if (done) return
+        if (!R) { wantSkip = true; return }
+        log.skipped = true
+        if (variant === 'tier') { V.flash = Math.max(V.flash, 0.5); Snd.play('slam', { vol: 0.7 }) }
+        go()
+      },
+      tick(dt) {
+        el += dt; frame++; S.in = Math.min(1, S.in + dt * 4)
+        S.scroll += dt * 60
+        if (!R || el < 0.4) {   // 前振り: 紙が流れ始め、針は根元で震える
+          push((Math.random() - 0.5) * 0.03); S.needle += (-0.97 + Math.sin(el * 30) * 0.02 - S.needle) * 0.3; V.needle = S.needle
+          V.peek = Math.min(1, V.peek + dt * 2); V.hold = Math.min(1, V.hold + dt * 2)
+          return
+        }
+        if (t < 0) {
+          t = 0
+          if (variant === 'none') { Snd.loop('cricket', CRICKET, 0.55, 0.3); V.peek = 0; V.hold = 0 }
+          else drumNode = Snd.play('drumroll', { vol: 0.85, jitter: 0 })
+        }
+        t += dt
+        const k = clamp(t / HIT(variant), 0, 1)
+        let nTarget = -1, v = 0
+        if (variant === 'none') {
+          // 針はほとんど動かない。紙はほぼ一直線
+          v = (Math.random() - 0.5) * 0.04 + (Math.random() < 0.02 ? 0.12 : 0)
+          nTarget = -0.97 + (Math.random() < 0.05 ? 0.06 : 0)
+          V.peek = Math.max(0, V.peek - dt * 3); V.hold = Math.max(0, V.hold - dt * 3)
+          if (t > 0.9 && !log.yawn) { log.yawn = 1; V.yawn = 1 }
+          if (t > 1.6 && !V.shrug) V.shrug = 1
+        } else {
+          if (t < TW) {
+            // 自分の声の波形を地震計のように描く
+            const idx = Math.min(wave.length - 1, Math.floor(t / TW * wave.length))
+            let m = 0; for (let j = lastIdx; j <= idx; j++) m = Math.max(m, wave[j]); lastIdx = idx + 1
+            v = m * (frame % 2 ? 1 : -1) * (0.75 + Math.random() * 0.25)
+            nTarget = -1 + m * 1.6 + Math.sin(t * 19) * 0.35 * I
+          } else {
+            const b = (t - TW) / (HIT(variant) - TW)
+            if (variant === 'good' && b > 0.35) {
+              // しぼむ: 揺れが止まり、針が落ち、ドラムロールが途切れる
+              if (!log.fizzle) { log.fizzle = 1; stopDrum(); $('susTxt').textContent = T('fizzle'); sign.classList.add('droop'); after(0.3, () => Snd.play('crow', { rate: 0.8, vol: 0.8 })) }
+              v = (Math.random() - 0.5) * 0.03; nTarget = -0.8 + Math.sin(t * 5) * 0.08 * (1 - b)
+              V.hold = Math.max(0, V.hold - dt * 3); V.fur = Math.max(0, V.fur - dt * 3); V.peek = Math.max(0, V.peek - dt * 2)
+            } else {
+              // 溜め: 揺れと針が結果の大きさに合わせて強くなる
+              v = (Math.random() * 2 - 1) * (0.25 + b * 1.4) * I * (variant === 'good' ? 0.8 : 1.15)
+              nTarget = -0.2 + b * 1.1 * I + Math.sin(t * 31) * 0.4 * I
+            }
+          }
+          if (!log.fizzle) {
+            V.hold = 1; V.peek = 1; S.furK = Math.min(1, (S.furK || 0) + dt * 1.5); V.fur = S.furK * Math.min(1, I * 1.3)
+            V.shake = Math.max(V.shake, 0.02 + Math.pow(I, 3) * 0.75 * k)
+            if (I > 0.7 && Math.random() < k * I * 0.5) V.parts.push({ k: 'dust', x: rnd(-260, 260), y: rnd(-30, 20), vx: rnd(-15, 15), vy: rnd(-40, -10), r: rnd(4, 10), life: 1, decay: 1.2 })
+            if (I > 0.85 && Math.random() < k * 0.3) V.leaves.push({ x: -200 + rnd(-30, 30), y: -150 + rnd(-30, 30), vx: rnd(-40, 40), vy: rnd(0, 30), rot: rnd(0, 6), vr: rnd(-6, 6), c: pick(['#5e8a3a', '#e8782a']) })
+          }
+        }
+        push(v)
+        S.needle += (clamp(nTarget, -1, 1.05) - S.needle) * 0.35; V.needle = S.needle
+        if (variant === 'tier' && t >= HIT(variant) && !S.pinned) {
+          // 振り切れてドン
+          S.pinned = 1; S.needle = 1.1; V.needle = 1.1; stopDrum()
+          V.flash = 0.5 + I * 0.45; boost(0.4 + I * 0.8); sign.classList.add('pop')
+          Snd.play('slam', { vol: 0.9, jitter: 0 }); if (R.tier >= 6) Snd.play('boom', { vol: 0.6, rate: 0.8 })
+          for (let i = 0; i < 6; i++) push((i % 2 ? 1 : -1) * (1.2 + I))
+        }
+        if (S.pinned) { S.needle = 1.1 + Math.sin(t * 60) * 0.03; V.needle = S.needle }
+        if (t >= HIT(variant) + (variant === 'tier' ? 0.25 : 0)) go()
+      },
+    }
+    return sus
   }
 
   // ---------------- 破壊の台本 ----------------
@@ -806,6 +982,7 @@
   function snap() { try { const c = document.createElement('canvas'), w = 720, h = Math.round(w * 8.4 / 16); c.width = w; c.height = h; const x = c.getContext('2d'); const sw = cv.width, sh = Math.round(cv.width * h / w), cyc = (V.space >= 1 ? H * 0.44 : GY() - 100 * U * V.zoom) * DPR, sy = clamp(Math.round(cyc - sh / 2), 0, Math.max(0, cv.height - sh)); x.drawImage(cv, 0, sy, sw, Math.min(sh, cv.height - sy), 0, 0, w, h); return c.toDataURL('image/jpeg', 0.84) } catch (e) { return '' } }
   function finishShow(R) {
     stopReplay(); V.sing = 0; show_ = null; singer_ = () => { V.level *= 0.9 }
+    Snd.loop('cricket', null, 0, 1.2)
     const jin = R.kind === 'tier' ? (R.tier >= 7 ? 'jinBig' : 'jinMid') : 'jinMeh'
     Snd.play(jin, { vol: 0.7, jitter: 0 })
     if (R.kind === 'good') Snd.play('giggle', { vol: 0.3 })
@@ -821,13 +998,6 @@
     const src = R.kind === 'good' ? D.good : R.kind === 'none' ? (R.whisper ? D.whisper : D.none) : D.tiers[R.tier]
     return src[key][R.subI % src[key].length]
   }
-  function hintOf(R) {
-    if (R.kind === 'good') return T('hint_good')
-    if (R.kind === 'none') return T('hint_vol')
-    if (R.tier >= 10) return T('hint_top')
-    const gg = R.gauges, order = ['vol', 'lost', 'wild', 'persist'].sort((a, b) => gg[a] - gg[b])
-    return T('hint_' + order[0])
-  }
   function dateStr() { const d = new Date(); return lang === 'ja' ? `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日\n夕刊` : d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) + '\nEvening' }
   function stampOf(R) { return R.kind === 'tier' ? `${T('level')}<em>${R.tier}/10</em>` : R.kind === 'good' ? (lang === 'ja' ? '被害<em>なし</em>' : 'No<em>damage</em>') : (lang === 'ja' ? '本日<em>無音</em>' : 'Total<em>silence</em>') }
   function fillResult(R) {
@@ -838,7 +1008,6 @@
     const badges = []; if (R.reqOk) badges.push(T('reqOk')); if (R.ufo) badges.push(T('ufo')); if (R.encore) badges.push(lang === 'ja' ? 'アンコール' : 'Encore')
     $('rBadges').innerHTML = badges.map(b => `<span>${b}</span>`).join('')
     $('rGauges').innerHTML = ['vol', 'lost', 'wild', 'persist'].map(k => `<span>${T('g_' + k)}</span><span class="bar"><i style="width:${R.gauges[k]}%"></i></span><span class="rd">${readOf(k, R.gauges[k])}</span>`).join('')
-    $('rHint').textContent = hintOf(R)
     const rb = $('bReplay')
     if (R.finger || !recBuf) { rb.disabled = true; rb.textContent = R.finger ? T('noRec') : T('replay') }
     else { rb.disabled = false; rb.innerHTML = `<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3l12 7-12 7z" fill="#231f2b"/></svg><span>${T('replay')}</span>` }
@@ -935,6 +1104,7 @@
   $('bSave').addEventListener('click', onSave)
   $('bPost').addEventListener('click', onPost)
   $('vShow').addEventListener('pointerdown', () => { if (show_ && show_.next) show_.skip() })
+  $('vSus').addEventListener('pointerdown', e => { e.preventDefault(); if (sus_) sus_.skip() })
   $('bMute').addEventListener('click', () => { muted = !muted; LS.set('ar_mute', muted ? '1' : '0'); Snd.setMute(muted); unlockAudio(); $('muteWave').style.display = muted ? 'none' : ''; $('muteX').hidden = !muted })
   $('muteWave').style.display = muted ? 'none' : ''; $('muteX').hidden = !muted
   document.addEventListener('visibilitychange', () => { if (document.hidden && Snd.ctx && Snd.ctx.state === 'running' && V.mode !== 'sing') { try { Snd.ctx.suspend() } catch (e) {} } else if (!document.hidden && Snd.ctx && Snd.ctx.state === 'suspended' && !window.__muteOk) { try { Snd.ctx.resume() } catch (e) {} } })
@@ -946,7 +1116,10 @@
     dbg: { pause(p) { paused = p }, step(n = 1) { for (let i = 0; i < n; i++) stepWorld() } },
     // 台本どおりに結果を出す（撮影・OGP 用）。f は analyzer の数字
     showWith(over) { stopReplay(); resetWorld(); const f = { dur: 5, actFrac: 1, voicedRatio: 0.8, unsteady: 0.8, devMean: 30, rangeSemis: 20, jumpsPerSec: 2, jitter: 50, harsh: 0.6, loudDb: -8, medianHz: 300, longestSec: 5, riseDb: 0, ...over }; const R = makeResult(f, false); if (over.ufo != null) R.ufo = over.ufo; if (over.encore != null) R.encore = over.encore; runShow(R); return R },
-    skip() { if (show_ && show_.next) show_.skip() },
+    skip() { if (sus_) { sus_.skip(); return } if (show_ && show_.next) show_.skip() },
+    // 判定の間から結果まで（撮影用）。wave は 0..1 の160点。省くと台本の声
+    susWith(over, wave) { stopReplay(); resetWorld(); show_ = null; const f = { dur: 5, actFrac: 1, voicedRatio: 0.8, unsteady: 0.8, devMean: 30, rangeSemis: 20, jumpsPerSec: 2, jitter: 50, harsh: 0.6, loudDb: -8, medianHz: 300, longestSec: 5, riseDb: 0, ...over }; const R = makeResult(f, false); const sus = startSuspense(); const w = wave || Float32Array.from({ length: 160 }, (_, i) => R.kind === 'none' ? 0.02 : clamp(0.35 + 0.4 * Math.abs(Math.sin(i * 0.11)) + 0.2 * Math.sin(i * 0.9), 0, 1)); sus.ready(R, w); return R },
+    get susOn() { return !!sus_ },
     xy(id) { const r = $(id).getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height } },
     postUrl() { return lastR ? postUrl(lastR) : '' }, makeCard: () => lastR && makeCard(lastR), recBufLen: () => recBuf ? recBuf.length : 0,
   }

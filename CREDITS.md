@@ -32,3 +32,5 @@
 - snd/slam.mp3: 100 CC0 SFX / rubberduck / CC0
 - snd/tick.mp3: Interface Sounds / Kenney / CC0
 - snd/go.mp3: Interface Sounds / Kenney / CC0
+- snd/drumroll.mp3: File:Drum Roll Intro.ogg / Iwan Sounds and DIY / CC0
+- snd/cricket.mp3: Crickets Ambient Noise - loopable / Wolfgang_ / CC0

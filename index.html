@@ -4,16 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>空き地リサイタル〜歌声を響かせろ！〜</title>
-<meta name="description" content="空き地でマイクに5秒歌うバカゲー。大声で音痴で暴れるほど、カラスが落ち、窓が割れ、電線が切れ、新幹線が止まり、最後は地球が滅ぶ。上手く歌うと何も起きない。声は端末の中だけで判定します。">
+<meta name="description" content="空き地でマイクに5秒歌うバカゲー。歌い終わると、町に何かが起きる。カラスか、窓か、新幹線か、地球か。声は端末の中だけで判定します。">
 <meta name="theme-color" content="#2b2f55">
 <meta property="og:type" content="website">
 <meta property="og:title" content="空き地リサイタル〜歌声を響かせろ！〜">
-<meta property="og:description" content="5秒歌ったら地球が滅んだ。音痴で大声なほど町が壊れる、マイクで歌うバカゲー。">
+<meta property="og:description" content="5秒歌ったら地球が滅んだ。空き地でマイクに歌うバカゲー。">
 <meta property="og:image" content="https://tom3games.github.io/akichi-recital/og.png?v=1">
 <meta property="og:url" content="https://tom3games.github.io/akichi-recital/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="空き地リサイタル〜歌声を響かせろ！〜">
-<meta name="twitter:description" content="5秒歌ったら地球が滅んだ。音痴で大声なほど町が壊れる、マイクで歌うバカゲー。">
+<meta name="twitter:description" content="5秒歌ったら地球が滅んだ。空き地でマイクに歌うバカゲー。">
 <meta name="twitter:image" content="https://tom3games.github.io/akichi-recital/og.png?v=1">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='38' cy='22' r='15' fill='%23cfd3da' stroke='%23222' stroke-width='4'/%3E%3Cpath d='M28 32 10 56' stroke='%23222' stroke-width='9' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -82,6 +82,17 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
 #bHeart{position:absolute;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translateX(-50%);width:170px;height:170px;border-radius:50%;pointer-events:auto;background:radial-gradient(circle at 40% 35%,#ff8a7a,#c4302b 60%,#7d1c19);border:3px solid #23121a;color:#fff;font-weight:900;font-size:18px;box-shadow:0 6px 0 #5d1512;touch-action:none}
 #bHeart.down{transform:translateX(-50%) translateY(4px) scale(.97);box-shadow:0 2px 0 #5d1512}
 
+/* ---------- 判定の間: 段ボールの「判定中…」が揺れる ---------- */
+#vSus{pointer-events:auto}
+#susSign{position:absolute;left:50%;top:calc(max(14px,env(safe-area-inset-top)) + 40px);transform:translateX(-50%);transform-origin:50% -18px;padding:8px 18px 9px;background:#c99c62;background-image:repeating-linear-gradient(90deg,rgba(80,50,20,.07) 0 2px,transparent 2px 9px);border-radius:3px;box-shadow:0 8px 14px -8px rgba(0,0,0,.6);animation:susSwing 1.3s ease-in-out infinite alternate;white-space:nowrap}
+#susSign::before,#susSign::after{content:"";position:absolute;top:-30px;width:2px;height:32px;background:#3b3530}
+#susSign::before{left:14px}#susSign::after{right:14px}
+#susTxt{font-family:var(--hand);font-size:30px;line-height:1.1;color:#1d1a24}
+@keyframes susSwing{0%{transform:translateX(-50%) rotate(-4deg)}100%{transform:translateX(-50%) rotate(4deg)}}
+#susSign.droop{animation:none;transform:translateX(-50%) translateY(10px) rotate(16deg);transition:transform .5s cubic-bezier(.3,1.6,.5,1)}
+#susSign.pop{animation:none;transform:translateX(-50%) scale(1.25) rotate(-3deg);opacity:0;transition:transform .2s,opacity .25s .05s}
+#susSkip{position:absolute;right:12px;bottom:max(10px,env(safe-area-inset-bottom));color:rgba(255,255,255,.7);font-size:12px;font-weight:700}
+
 /* ---------- 破壊の場面: 速報の帯 ---------- */
 #vShow{pointer-events:auto}
 #telop{position:absolute;left:0;right:0;top:15svh;display:flex;align-items:stretch;transform:translateX(-110%);transition:transform .22s cubic-bezier(.2,.8,.2,1)}
@@ -134,7 +145,7 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
 .card .btns button.pri{background:var(--red);color:#fff}
 .tut3{display:flex;justify-content:space-between;gap:6px;margin:6px 0 4px}
 .tut3 div{flex:1;text-align:center;font-family:var(--hand);font-size:24px;color:var(--red);background:#fbf8f0;border:1.5px solid #23121a;padding:8px 2px}
-.tutEnd{text-align:center;font-weight:900;font-size:17px;margin-top:6px}
+.tutEnd{text-align:center;font-weight:700;font-size:13px;margin-top:8px;white-space:pre-line}
 .tutmic{display:block;margin:2px auto 8px;width:120px;height:70px}
 #toast{position:fixed;left:50%;bottom:22svh;transform:translateX(-50%);z-index:60;background:rgba(20,18,28,.88);color:#fff;font-weight:700;padding:8px 14px;border-radius:6px;font-size:14px}
 </style>
@@ -168,6 +179,11 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
   <button id="bHeart" hidden></button>
 </main>
 
+<main id="vSus" class="view" hidden>
+  <div id="susSign"><span id="susTxt"></span></div>
+  <p id="susSkip"></p>
+</main>
+
 <main id="vShow" class="view" hidden>
   <div id="telop"><b>速報</b><span id="telopTxt"></span></div>
   <p id="skipHint"></p>
@@ -180,7 +196,6 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
     <p id="rSub"></p>
     <div class="photo"><img id="rPhoto" alt=""><div id="rBadges"></div><div id="rStamp"></div></div>
     <div class="gauges" id="rGauges"></div>
-    <p id="rHint"></p>
   </article>
   <div class="rbtns">
     <div class="rrow"><button id="bReplay"></button><button id="btnAgain"></button></div>
@@ -250,8 +265,8 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
 <script src="tm.js?v=1" data-game="akichi-recital"></script>
 <script src="sfx.js?v=1"></script>
 <script src="analyzer.js?v=2"></script>
-<script src="data.js?v=1"></script>
-<script src="game.js?v=2"></script>
+<script src="data.js?v=2"></script>
+<script src="game.js?v=3"></script>
 <script src="support.js?v=1" data-ja="のど飴" data-en="a throat lozenge"></script>
 </body>
 </html>

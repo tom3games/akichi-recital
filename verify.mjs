@@ -53,7 +53,7 @@ const fit = q => q.evaluate(() => {
 // 重なり: 号外の紙と下のボタンが重ならない
 const noOverlap = q => q.evaluate(() => { const a = document.getElementById('paper').getBoundingClientRect(), b = document.querySelector('.rbtns').getBoundingClientRect(); return { paperBottom: Math.round(a.bottom), btnTop: Math.round(b.top), ok: a.bottom <= b.top + 2 } })
 // 遊び中に同時に見えている文字の数（テロップと飛ばす案内まで）
-const textCount = q => q.evaluate(() => [...document.querySelectorAll('#vShow:not([hidden]) #telop.in span, #vSing:not([hidden]) #count:not([hidden]), #vSing:not([hidden]) #singCue:not([hidden]), #vSing:not([hidden]) #fingerTip:not([hidden])')].filter(e => e.textContent.trim()).length)
+const textCount = q => q.evaluate(() => [...document.querySelectorAll('#vSus:not([hidden]) #susTxt, #vSus:not([hidden]) #susSkip, #vShow:not([hidden]) #telop.in span, #vSing:not([hidden]) #count:not([hidden]), #vSing:not([hidden]) #singCue:not([hidden]), #vSing:not([hidden]) #fingerTip:not([hidden])')].filter(e => e.textContent.trim()).length)
 
 // ================= 1. Chromium: 本物のマイクの道（偽マイクに WAV を流す） =================
 async function micRound(wav, name, { tut = false } = {}) {
@@ -74,6 +74,26 @@ async function micRound(wav, name, { tut = false } = {}) {
   await p.waitForTimeout(1500)
   if (name === 'wobble') await p.screenshot({ path: `${ROOT}/shots/v-rec.png` })
   out.recText = await textCount(p)
+  // 判定の間: 録音が終わると出る
+  await p.waitForFunction(() => !document.getElementById('vSus').hidden, null, { timeout: 8000 })
+  const susT0 = Date.now()
+  await p.waitForFunction(() => window.__sus && window.__sus.variant, null, { timeout: 5000 })
+  out.susVariant = await p.evaluate(() => window.__sus.variant)
+  out.drum0 = await p.evaluate(() => Snd.played.drumroll || 0)
+  if (name === 'sine') {
+    // 本物のタップで飛ばす
+    await p.waitForTimeout(700); await p.mouse.click(200, 400)
+    await p.waitForFunction(() => !document.getElementById('vShow').hidden, null, { timeout: 1500 })
+    out.susSkipMs = Date.now() - susT0; out.susSkipped = await p.evaluate(() => window.__sus.skipped)
+  } else {
+    await p.waitForTimeout(1300)
+    out.susText = await textCount(p)
+    out.cricket = await p.evaluate(() => !!(Snd.loops.cricket))
+    out.drum = await p.evaluate(() => Snd.played.drumroll || 0)
+    if (name === 'wobble' || name === 'silence') await p.screenshot({ path: `${ROOT}/shots/v-sus-mic-${name}.png` })
+    await p.waitForFunction(() => !document.getElementById('vShow').hidden, null, { timeout: 6000 })
+    out.susMs = Date.now() - susT0; out.susLog = await p.evaluate(() => window.__sus)
+  }
   await p.waitForFunction(() => !document.getElementById('vShow').hidden, null, { timeout: 12000 })
   await p.waitForTimeout(1200)
   out.showText = await textCount(p)
@@ -98,10 +118,14 @@ await t('マイク: 無音のまま（muteOk・聞いた後も）', async () => 
 await t('マイク: 計測に開始と終了が残る', async () => { expect(wob.tm.includes('game_start') && wob.tm.includes('game_end'), wob.tm); return wob.tm })
 await t('マイク: 画面の文字は同時に2つまで（カウント・録音中・破壊）', async () => { expect(wob.countText <= 2 && wob.recText <= 2 && wob.showText <= 2, wob); return [wob.countText, wob.recText, wob.showText] })
 await t('マイク: エラーなし', async () => { expect(!wob.errs.length, wob.errs.join('|')) })
+await t('マイク(上の段): 録音の後に判定の間（ドラムロール・2.5〜4.2秒・自然に破壊へ）', async () => { expect(wob.susVariant === 'tier' && wob.drum >= 1 && !wob.cricket && wob.susMs >= 2400 && wob.susMs <= 4300 && !wob.susLog.skipped, wob); return { ms: wob.susMs, dur: wob.susLog.dur, drum: wob.drum, text: wob.susText } })
+await t('マイク: 判定の間も文字は2つまで', async () => { expect(wob.susText <= 2, wob.susText); return wob.susText })
 const sine = await micRound('mic_sine.wav', 'sine')
 await t('マイク(音の合った純音): 普通に上手かった', async () => { expect(sine.r && sine.r.kind === 'good', sine.r); return sine.r })
+await t('マイク(上手い): 判定の間は good の型で、本物のタップで飛ばせて結果まで行く', async () => { expect(sine.susVariant === 'good' && sine.susSkipped === true && sine.susSkipMs < 2400 && sine.r, sine); return { variant: sine.susVariant, skipMs: sine.susSkipMs } })
 const sil = await micRound('mic_silence.wav', 'silence')
 await t('マイク(無音): 歌ってない', async () => { expect(sil.r && sil.r.kind === 'none', sil.r); return sil.r })
+await t('マイク(無音): 歌ってないでも判定の間がある（コオロギ・ドラムロールなし）', async () => { expect(sil.susVariant === 'none' && sil.cricket && sil.drum === sil.drum0 && sil.susMs >= 2200 && sil.susMs <= 4300, sil); return { ms: sil.susMs, cricket: sil.cricket } })
 await t('マイク(無音・純音): エラーなし', async () => { expect(!sine.errs.length && !sil.errs.length, sine.errs.concat(sil.errs).join('|')) })
 
 // ================= 2. Chromium: 共通の確認・指で歌う・画面の収まり =================
@@ -125,6 +149,14 @@ const browser = await chromium.launch(MUTE_LAUNCH)
   })
   await t('マイクの横にプライバシーの一行がある', async () => { const s = await p.textContent('#tPriv'); expect(/端末の外に出ません/.test(s), s); return s })
   await t('画面に「AI」「画像生成」が出ない', async () => { const s = await p.evaluate(() => document.body.innerText + [...document.querySelectorAll('[aria-label],img[alt]')].map(e => e.getAttribute('aria-label') || e.alt).join(' ')); expect(!/\bAI\b|画像生成/.test(s), s.match(/.{0,10}(AI|画像生成).{0,10}/)); })
+  await t('点の取り方を書かない（説明・遊び方・OGP・結果に大声/音痴/外す/暴れる が無い。ゲージ名は除く）', async () => {
+    const bad = await p.evaluate(() => { const re = /大声|音痴|外し|外す|暴れる|壊れる。|louder|off-key|wilder|wild =/i, out = []
+      for (const lg of ['ja', 'en']) for (const [k, v] of Object.entries(D.ui[lg])) { if (/^g_/.test(k)) continue; const s = [].concat(typeof v === 'function' ? v('x', 'y') : v).join(' '); if (re.test(s)) out.push(lg + '.' + k + ':' + s) }
+      for (const m of document.querySelectorAll('meta[name=description],meta[property="og:description"],meta[name="twitter:description"]')) if (re.test(m.content)) out.push(m.content)
+      if (document.getElementById('rHint')) out.push('rHint')
+      return out })
+    expect(!bad.length, bad.join(' | '))
+  })
   // 指で歌う（本物のマウスでボタンを押したまま動かす）
   async function fingerRound(kind) {
     await press(p, 'bFinger')
@@ -140,11 +172,19 @@ const browser = await chromium.launch(MUTE_LAUNCH)
       }
       await p.mouse.up()
     }
+    await p.waitForFunction(() => !document.getElementById('vSus').hidden, null, { timeout: 9000 })
+    const susT0 = Date.now()
+    await p.waitForFunction(() => window.__sus && window.__sus.variant, null, { timeout: 3000 })
+    const susVariant = await p.evaluate(() => window.__sus.variant)
+    let susSkipped = false
+    if (kind === 'wild') { await p.waitForTimeout(1200); await p.screenshot({ path: `${ROOT}/shots/v-sus-finger-wild.png` }); await p.mouse.click(200, 400); await p.waitForFunction(() => !document.getElementById('vShow').hidden, null, { timeout: 1500 }); susSkipped = await p.evaluate(() => window.__sus.skipped) }
     await p.waitForFunction(() => !document.getElementById('vShow').hidden || !document.getElementById('vResult').hidden, null, { timeout: 9000 })
+    const susMs = Date.now() - susT0
     if (kind === 'wild') await p.screenshot({ path: `${ROOT}/shots/v-finger-show.png` })
     await p.evaluate(() => ar.skip())
     await p.waitForFunction(() => !document.getElementById('vResult').hidden, null, { timeout: 8000 })
-    const out = await p.evaluate(() => ({ r: window.__lastResult, replay: document.getElementById('bReplay').disabled, txt: document.getElementById('bReplay').textContent }))
+    const out = await p.evaluate(() => ({ r: window.__lastResult, replay: document.getElementById('bReplay').disabled, txt: document.getElementById('bReplay').textContent, fizzle: window.__sus.fizzle || 0 }))
+    Object.assign(out, { susVariant, susSkipped, susMs })
     await p.screenshot({ path: `${ROOT}/shots/v-finger-${kind}.png` })
     await p.evaluate(() => { document.getElementById('vResult').hidden = true; document.getElementById('vTitle').hidden = false })
     return out
@@ -156,6 +196,12 @@ const browser = await chromium.launch(MUTE_LAUNCH)
   await t('心の声: 激しく動かす → 上の段（7以上）', async () => { expect(wild.r.kind === 'tier' && wild.r.tier >= 7, wild.r); return wild.r })
   const none = await fingerRound('none')
   await t('心の声: 押さない → 歌ってない（何もしないと最低）', async () => { expect(none.r.kind === 'none', none.r); return none.r })
+  await t('心の声: 判定の間が結果に合った型で出る（上手い=しぼむ・暴れ=本物のクリックで飛ばす・無言=コオロギ）', async () => {
+    expect(still.susVariant === 'good' && still.fizzle === 1 && still.susMs >= 2400 && still.susMs <= 4300, still)
+    expect(wild.susVariant === 'tier' && wild.susSkipped === true && wild.susMs < 2600, wild)
+    expect(none.susVariant === 'none' && none.susMs >= 2200 && none.susMs <= 4300, none)
+    return { still: still.susMs, wildSkip: wild.susMs, none: none.susMs }
+  })
   // 結果の中身
   await p.evaluate(() => { ar.dbg.pause(false); ar.showWith({}) })
   await p.waitForTimeout(400); await p.evaluate(() => ar.skip())
@@ -187,6 +233,7 @@ const browser = await chromium.launch(MUTE_LAUNCH)
   await ctx.close()
 }
 // 画面の収まり: スマホ縦3サイズ × 全画面
+const sus = {}
 for (const [w, h, name] of [[360, 640, 'small'], [390, 844, 'phone'], [430, 932, 'max']]) {
   const q = await open(browser, { viewport: { width: w, height: h }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 })
   const views = {}
@@ -198,6 +245,21 @@ for (const [w, h, name] of [[360, 640, 'small'], [390, 844, 'phone'], [430, 932,
   views.finger = await fit(q); await q.screenshot({ path: `${ROOT}/shots/fit-${name}-finger.png` })
   const heartIn = await q.evaluate(() => { const r = ar.xy('bHeart'); return r.y + r.h / 2 <= innerHeight && r.y - r.h / 2 >= 0 })
   await q.waitForFunction(() => !document.getElementById('vShow').hidden || !document.getElementById('vResult').hidden, null, { timeout: 9000 })
+  // 判定の間のコマ（時計を止めて進める）
+  for (const [k, f, secs] of [['t10', {}, [1.4, 3.2, 3.45]], ['t3', { loudDb: -24, devMean: 18, unsteady: 0.5, rangeSemis: 5, jumpsPerSec: 0.2, harsh: 0.05 }, [3.2]], ['good', { loudDb: -26, devMean: 6, unsteady: 0.2, rangeSemis: 5, jumpsPerSec: 0, harsh: 0, jitter: 10, voicedRatio: 0.9 }, [2.2, 3.3]], ['none', { actFrac: 0.02, loudDb: -60 }, [1.9]]]) {
+    await q.evaluate(f => { ar.dbg.pause(true); return ar.susWith(f) }, f)
+    let done = 0
+    for (const sec of secs) {
+      await q.evaluate(n => ar.dbg.step(n), Math.round((sec - done) * 60)); done = sec
+      await q.waitForTimeout(80)
+      const tag = `${k}-${sec}`
+      views['sus-' + tag] = await fit(q)
+      const st = await q.evaluate(() => ({ on: !document.getElementById('vSus').hidden, v: window.__sus.variant, txt: document.getElementById('susTxt').textContent, needle: +ar.V.needle?.toFixed?.(2), shake: +ar.V.shake.toFixed(3), hold: ar.V.hold, fur: +ar.V.fur.toFixed(2) }))
+      sus[`${name}-${tag}`] = st
+      await q.screenshot({ path: `${ROOT}/shots/sus-${name}-${tag}.png` })
+    }
+    await q.evaluate(() => { ar.dbg.pause(false); ar.skip(); ar.skip() }); await q.waitForFunction(() => !document.getElementById('vResult').hidden, null, { timeout: 8000 })
+  }
   for (const [k, f] of [['t10', {}], ['t4', { loudDb: -24, devMean: 20, unsteady: 0.6, rangeSemis: 6, jumpsPerSec: 0.3, harsh: 0.1 }], ['good', { loudDb: -26, devMean: 6, unsteady: 0.2, rangeSemis: 5, jumpsPerSec: 0, harsh: 0, jitter: 10, voicedRatio: 0.9 }], ['none', { actFrac: 0.02, loudDb: -60 }]]) {
     await q.evaluate(f => ar.showWith(f), f); await q.waitForTimeout(900)
     if (k === 't10') { views.show = await fit(q); await q.screenshot({ path: `${ROOT}/shots/fit-${name}-show.png` }) }
@@ -212,6 +274,9 @@ for (const [w, h, name] of [[360, 640, 'small'], [390, 844, 'phone'], [430, 932,
   await t(`${name}: はみ出し・エラーなし`, async () => { const o = await overflow(q); expect(o.sw <= o.W && !o.bad.length && !q.errs.length, JSON.stringify(o) + q.errs.join('|')) })
   await q.close()
 }
+await t('判定の間(コマ): 上の段ほど揺れが強く、針が振り切れる', async () => { const a = sus['phone-t10-3.2'], b = sus['phone-t3-3.2'], c = sus['phone-t10-3.45']; expect(a.v === 'tier' && a.shake > b.shake * 2 && c.needle >= 1, { a, b, c }); return { t10: a.shake, t3: b.shake, pinned: c.needle } })
+await t('判定の間(コマ): 上手いは途中でしぼむ（あれ？）', async () => { const a = sus['phone-good-2.2'], b = sus['phone-good-3.3']; expect(a.txt === '判定中…' && b.txt === '…あれ？' && b.needle < -0.5, { a, b }); return { a: a.txt, b: b.txt } })
+await t('判定の間(コマ): 歌ってないは針がほぼ動かず、町も息をのまない', async () => { const a = sus['phone-none-1.9']; expect(a.v === 'none' && a.needle < -0.85 && a.hold === 0, a); return a })
 await browser.close()
 
 // ================= 3. WebKit（iPhone 相当）: マイク拒否と心の声 =================
