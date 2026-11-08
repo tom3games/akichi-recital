@@ -3,7 +3,7 @@
 // 本番ドメインで ID があるときだけ送る。ローカルと自動テストは window.__tmLog に積むだけ
 (function () {
   var ID = ''
-  var HOSTS = ['tom3games.github.io']
+  var HOSTS = ['tom3games.github.io', 'tom3games.com']
   var script = document.currentScript
   var game = (script && script.getAttribute('data-game')) || location.pathname.split('/').filter(Boolean)[0] || 'unknown'
   var id = window.__tmId || ID

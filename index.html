@@ -2,6 +2,8 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
+<script id="ghMove">if(location.hostname==='tom3games.github.io'){location.replace('https://tom3games.com/play/akichi-recital/'+location.search+location.hash)}</script>
+<link rel="canonical" href="https://tom3games.com/play/akichi-recital/">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>空き地リサイタル〜歌声を響かせろ！〜</title>
 <meta name="description" content="空き地でマイクに5秒歌うバカゲー。歌い終わると、町に何かが起きる。カラスか、窓か、新幹線か、地球か。声は端末の中だけで判定します。">
@@ -9,12 +11,12 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="空き地リサイタル〜歌声を響かせろ！〜">
 <meta property="og:description" content="5秒歌ったら地球が滅んだ。空き地でマイクに歌うバカゲー。">
-<meta property="og:image" content="https://tom3games.github.io/akichi-recital/og.png?v=1">
-<meta property="og:url" content="https://tom3games.github.io/akichi-recital/">
+<meta property="og:image" content="https://tom3games.com/play/akichi-recital/og.png?v=1">
+<meta property="og:url" content="https://tom3games.com/play/akichi-recital/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="空き地リサイタル〜歌声を響かせろ！〜">
 <meta name="twitter:description" content="5秒歌ったら地球が滅んだ。空き地でマイクに歌うバカゲー。">
-<meta name="twitter:image" content="https://tom3games.github.io/akichi-recital/og.png?v=1">
+<meta name="twitter:image" content="https://tom3games.com/play/akichi-recital/og.png?v=1">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='38' cy='22' r='15' fill='%23cfd3da' stroke='%23222' stroke-width='4'/%3E%3Cpath d='M28 32 10 56' stroke='%23222' stroke-width='9' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -130,7 +132,7 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
 #bReplay:disabled{opacity:.55}
 .rrow.small>button{min-height:40px;font-size:14px;background:rgba(242,236,223,.9);border:1.5px solid #23121a}
 .rfoot{display:flex;justify-content:center;gap:14px;font-size:11px}
-@media (max-height:700px){.photo{aspect-ratio:16/7.4}.rbtns{padding-top:6px;gap:5px}}
+@media (max-height:700px){.photo{aspect-ratio:16/6.2}.rbtns{padding-top:6px;gap:5px}}
 .rfoot a,.rfoot button{color:rgba(255,255,255,.75);text-decoration:none;font-size:11px;min-height:24px}
 
 /* ---------- 板（遊び方・最初の説明・マイク不可） ---------- */
@@ -201,7 +203,7 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
   <div class="rbtns">
     <div class="rrow"><button id="bReplay"></button><button id="btnAgain"></button></div>
     <div class="rrow small"><button id="bSave"></button><button id="bPost"></button></div>
-    <div class="rfoot"><button id="bHow2"></button><a href="https://tom3games.github.io/" target="_blank" rel="noopener" id="aMore">tom3games</a></div>
+    <div class="rfoot" data-home-slot><button id="bHow2"></button></div>
   </div>
 </main>
 
@@ -263,11 +265,11 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
   },6000);
 })();
 </script>
-<script src="tm.js?v=1" data-game="akichi-recital"></script>
+<script src="tm.js?v=2" data-game="akichi-recital"></script>
 <script src="sfx.js?v=1"></script>
 <script src="analyzer.js?v=3"></script>
 <script src="data.js?v=2"></script>
 <script src="game.js?v=3"></script>
-<script src="support.js?v=1" data-ja="のど飴" data-en="a throat lozenge"></script>
+<script src="support.js?v=2" data-ja="のど飴" data-en="a throat lozenge"></script>
 </body>
 </html>
