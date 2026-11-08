@@ -151,7 +151,8 @@
     const reqOk = !!(request && REQUESTS[request] && f.actFrac > 0.12 && REQUESTS[request](f))
     // 小さくて音程の無い音（ささやき・息・雑音）は歌っていない扱い。小さくても音程があれば歌っている（スマホのマイクは自動音量を切ると小さく入る）
     const quietNoPitch = f.loudDb < -36 && f.voicedRatio < 0.3
-    if (f.actFrac < 0.1 || g.vol < 6 || quietNoPitch) return { kind: 'none', tier: -1, D: 0, gauges: g, reqOk: false, whisper: f.actFrac >= 0.1 }
+    // 歌っていない時は、音程の迷子度・暴れ度を出さない（小さな雑音で針が振れて「音程が家出」と出ると変）
+    if (f.actFrac < 0.1 || g.vol < 6 || quietNoPitch) return { kind: 'none', tier: -1, D: 0, gauges: { ...g, lost: 0, wild: 0 }, reqOk: false, whisper: f.actFrac >= 0.1 }
     const good = f.actFrac >= 0.4 && f.voicedRatio >= 0.65 && f.devMean <= 18 && f.unsteady <= 0.55 && g.wild <= 40 && g.vol >= 18 && g.vol <= 85
     const v = g.vol / 100, L = g.lost / 100, Wd = g.wild / 100, P = g.persist / 100
     const chaos = 1 - (1 - L) * (1 - Wd)

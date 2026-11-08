@@ -102,7 +102,7 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
 #skipHint{position:absolute;right:12px;bottom:max(12px,env(safe-area-inset-bottom));color:rgba(255,255,255,.7);font-size:12px;font-weight:700}
 
 /* ---------- 結果: 号外 ---------- */
-#vResult{display:flex;flex-direction:column;align-items:center;padding:max(10px,env(safe-area-inset-top)) 12px max(10px,env(safe-area-inset-bottom));background:rgba(20,18,30,.55)}
+#vResult{display:flex;flex-direction:column;align-items:center;padding:calc(max(8px,env(safe-area-inset-top)) + 46px) 12px max(10px,env(safe-area-inset-bottom));background:rgba(20,18,30,.55)}
 .paper{position:relative;width:min(100%,400px);background:var(--paper);background-image:repeating-linear-gradient(0deg,rgba(60,40,10,.03) 0 1px,transparent 1px 3px);padding:10px 12px 10px;box-shadow:0 14px 30px -12px rgba(0,0,0,.7);transform:rotate(-1deg);flex:none}
 .mast{display:flex;align-items:center;gap:8px;border-bottom:3px double var(--ink);padding-bottom:5px;padding-right:40px}
 .mast .name{font-family:var(--min);font-weight:800;font-size:20px;letter-spacing:.08em}
@@ -130,6 +130,7 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
 #bReplay:disabled{opacity:.55}
 .rrow.small>button{min-height:40px;font-size:14px;background:rgba(242,236,223,.9);border:1.5px solid #23121a}
 .rfoot{display:flex;justify-content:center;gap:14px;font-size:11px}
+@media (max-height:700px){.photo{aspect-ratio:16/7.4}.rbtns{padding-top:6px;gap:5px}}
 .rfoot a,.rfoot button{color:rgba(255,255,255,.75);text-decoration:none;font-size:11px;min-height:24px}
 
 /* ---------- 板（遊び方・最初の説明・マイク不可） ---------- */
@@ -264,7 +265,7 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
 </script>
 <script src="tm.js?v=1" data-game="akichi-recital"></script>
 <script src="sfx.js?v=1"></script>
-<script src="analyzer.js?v=2"></script>
+<script src="analyzer.js?v=3"></script>
 <script src="data.js?v=2"></script>
 <script src="game.js?v=3"></script>
 <script src="support.js?v=1" data-ja="のど飴" data-en="a throat lozenge"></script>
