@@ -112,6 +112,9 @@ ok('5秒の分析が 600ms 以内（Node）', Object.values(res).every(r => r.ms
 // 44.1kHz（iPhone の一部）でも同じ判定
 { const n = 44100 * DUR, x = new Float32Array(n); for (let i = 0; i < n; i++) x[i] = 0.08 * Math.sin(2 * Math.PI * 440 * i / 44100); const f = A.analyze(x, 44100); ok('44.1kHz の純音も 440Hz・上手い', Math.abs(f.medianHz - 440) < 3 && A.judge(f).kind === 'good', [f.medianHz.toFixed(1), A.judge(f).kind]) }
 // 短い録音（3秒で止まった時）でも落ちない
+// スマホで自動音量を切って録ると、普通に歌っても -45dB 前後で入る。音程があれば「歌ってない」にしない（2026-11-09 本人「歌ったのに歌ってないって出る」）
+{ const n = SR * DUR, x = new Float32Array(n); let ph = 0; for (let i = 0; i < n; i++) { const f0 = 330 * Math.pow(2, Math.sin(2 * Math.PI * 0.7 * i / SR) * 0.4); ph += 2 * Math.PI * f0 / SR; x[i] = 0.0075 * Math.sin(ph) + 0.002 * Math.sin(2 * ph) }
+  const db = rmsDb(x); const j = A.judge(A.analyze(x, SR)); ok('小さく入った歌声（-45dB 前後・音程あり）は歌ってない扱いにしない', db < -42 && db > -48 && j.kind !== 'none', [db.toFixed(1), j.kind, j.tier]) }
 { const f = A.analyze(S.scream.slice(0, SR * 3), SR); ok('3秒しか録れなくても判定できる', A.judge(f).kind === 'tier') }
 { const f = A.analyze(new Float32Array(0), SR); ok('空の録音 → 歌ってない（落ちない）', A.judge(f).kind === 'none') }
 

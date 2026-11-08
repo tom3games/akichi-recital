@@ -702,6 +702,8 @@
       if (pcmN >= sr * 1.5) { x = new Float32Array(Math.min(pcmN, sr * 5)); let o = 0; for (const c of pcm) { if (o >= x.length) break; const n = Math.min(c.length, x.length - o); x.set(c.subarray(0, n), o); o += n } }
       const blob = await stopMr()
       let srx = sr
+      // 取れた音がほぼ無音（端末によっては処理は動くのに中身がゼロで届く）なら、予備の録音を使う
+      if (x) { let pk = 0; for (let i = 0; i < x.length; i += 8) { const v = Math.abs(x[i]); if (v > pk) pk = v } if (pk < 0.003 && blob) { window.__pcmSilent = pk; x = null } }
       if (!x && blob) { try { const buf = await decode(await blob.arrayBuffer()); srx = buf.sampleRate; x = buf.getChannelData(0).slice(0, Math.round(srx * 5)); recBuf = buf } catch (e) { x = null } }
       stopCapture()
       if (!x) { window.__recFail = (window.__recFail || 0) + 1; goTitle(); denied(T('recFailB'), T('recFailT')); return }

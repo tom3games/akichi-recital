@@ -5,7 +5,7 @@
 ;(function (root) {
   const HOP = 0.02            // 20ms ごとに1コマ
   const F0_MIN = 70, F0_MAX = 1100
-  const ACTIVE_DB = -44       // これより小さいコマは「歌っていない」
+  const ACTIVE_DB = -54       // これより小さいコマは「歌っていない」
   const YIN_TH = 0.15, VOICED_AP = 0.22
   const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v
   const lin = (v, a, b) => clamp01((v - a) / (b - a))
@@ -52,7 +52,7 @@
     const active = new Uint8Array(nF)
     let nAct = 0
     // 部屋の雑音がずっと鳴っている時は、それより 6dB 上だけ数える（ただし -36dB より上は必ず数える）
-    const thr = Math.max(ACTIVE_DB, Math.min(floor + 6, -36))
+    const thr = Math.max(ACTIVE_DB, Math.min(floor + 6, -50))
     for (let i = 0; i < nF; i++) if (db[i] > thr) { active[i] = 1; nAct++ }
     // 2) 音程（YIN）
     const { y, sr: sr2 } = decimate(x, sr)
@@ -126,7 +126,7 @@
 
   // ゲージ（0..100）
   function gauges(f) {
-    const vol = 100 * lin(f.loudDb, -42, -12)
+    const vol = 100 * lin(f.loudDb, -52, -14)
     const offTune = 60 * lin(f.devMean, 8, 24) + 40 * lin(f.unsteady, 0.4, 0.85)
     const noPitch = 100 * (1 - f.voicedRatio) * lin(f.actFrac, 0.05, 0.3)
     const lost = Math.max(offTune * Math.min(1, f.voicedRatio * 1.5), noPitch)
@@ -149,7 +149,9 @@
   function judge(f, request) {
     const g = f.gauges || gauges(f)
     const reqOk = !!(request && REQUESTS[request] && f.actFrac > 0.12 && REQUESTS[request](f))
-    if (f.actFrac < 0.1 || g.vol < 10) return { kind: 'none', tier: -1, D: 0, gauges: g, reqOk: false, whisper: f.actFrac >= 0.1 }
+    // 小さくて音程の無い音（ささやき・息・雑音）は歌っていない扱い。小さくても音程があれば歌っている（スマホのマイクは自動音量を切ると小さく入る）
+    const quietNoPitch = f.loudDb < -36 && f.voicedRatio < 0.3
+    if (f.actFrac < 0.1 || g.vol < 6 || quietNoPitch) return { kind: 'none', tier: -1, D: 0, gauges: g, reqOk: false, whisper: f.actFrac >= 0.1 }
     const good = f.actFrac >= 0.4 && f.voicedRatio >= 0.65 && f.devMean <= 18 && f.unsteady <= 0.55 && g.wild <= 40 && g.vol >= 18 && g.vol <= 85
     const v = g.vol / 100, L = g.lost / 100, Wd = g.wild / 100, P = g.persist / 100
     const chaos = 1 - (1 - L) * (1 - Wd)
