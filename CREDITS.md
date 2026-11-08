@@ -1,0 +1,34 @@
+- snd/amb_street.mp3: 上の41〜65秒（静かな通り・車が1台通る）を1.5秒の重ね合わせで継ぎ目なしのループにしたもの（22.5秒・16kHz・WAV） / cori / Public domain
+- snd/amb_birds.mp3: File:Birds singing in garden.ogg / ezwa / Public domain
+- snd/bgm_title.mp3: Comedy Funny Background Song / Almitory / CC-BY 3.0,CC-BY 4.0,CC-BY-SA 3.0,CC-BY-SA 4.0,CC0,GPL 2.0,GPL 3.0,OGA-BY 3.0
+- snd/crow1.mp3: Crow / fvcalderan / CC0
+- snd/crow2.mp3: Crow / fvcalderan / CC0
+- snd/crows.mp3: Crow / fvcalderan / CC0
+- snd/flap.mp3: Dragon Flap / VishwaJai / CC0
+- snd/glass1.mp3: 75 CC0 breaking / falling / hit sfx / rubberduck / CC0
+- snd/glass2.mp3: 75 CC0 breaking / falling / hit sfx / rubberduck / CC0
+- snd/glass3.mp3: 75 CC0 breaking / falling / hit sfx / rubberduck / CC0
+- snd/chime.mp3: Bell dings/chimes / PWL / CC0
+- snd/howl1.mp3: Dog sounds / pauliuw / CC0
+- snd/howl2.mp3: Dog sounds / pauliuw / CC0
+- snd/bark.mp3: Dog sounds / pauliuw / CC0
+- snd/zap.mp3: File:Static B.wav / Oreocooke / CC0
+- snd/snap.mp3: 75 CC0 breaking / falling / hit sfx / rubberduck / CC0
+- snd/creak.mp3: 75 CC0 breaking / falling / hit sfx / rubberduck / CC0
+- snd/rubble.mp3: 75 CC0 breaking / falling / hit sfx / rubberduck / CC0
+- snd/station.mp3: File:Taiwan Railway Station Arrival Sound 20221115 180616.wav / Lexcie / CC0
+- snd/whistle.mp3: File:218318 splicesound referee-whistle-blow-gymnasium.wav / SpliceSound / CC0
+- snd/siren.mp3: Sirens and Alarm Noise / aquinn / CC0
+- snd/crack1.mp3: 75 CC0 breaking / falling / hit sfx / rubberduck / CC0
+- snd/crack2.mp3: 75 CC0 breaking / falling / hit sfx / rubberduck / CC0
+- snd/boom.mp3: 100 CC0 SFX / rubberduck / CC0
+- snd/clap.mp3: File:Slow starting applause.ogg（盛り上がりの4秒） / Wikimedia Commons / Public domain
+- snd/giggle.mp3: Group giggling / Nocturnal_Vanguard / CC0
+- snd/cat.mp3: Cat Purr & Meow / Kerzoven / CC0
+- snd/jin_big.mp3: 85 Short music jingles / Kenney / CC0
+- snd/jin_meh.mp3: 85 Short music jingles / Kenney / CC0
+- snd/jin_mid.mp3: 85 Short music jingles / Kenney / CC0
+- snd/ufo.mp3: 63 Digital sound effects (lasers, phasers, space etc.) / Kenney / CC0
+- snd/slam.mp3: 100 CC0 SFX / rubberduck / CC0
+- snd/tick.mp3: Interface Sounds / Kenney / CC0
+- snd/go.mp3: Interface Sounds / Kenney / CC0
