@@ -64,13 +64,13 @@
   // ---------------- 世界の状態 ----------------
   const V = {
     t: 0, mode: 'title', level: 0, lvRaw: 0, hype: 0, zoom: 1, camY: 0, shake: 0, flash: 0, dark: 0, redSky: 0, space: 0,
-    rings: [], leaves: [], parts: [], crows: [], dogs: 0, speaker: 0, angry: 0, bubble: null, broken: 0, cutWires: 0, blackout: 0,
+    rings: [], leaves: [], parts: [], crows: [], dogs: 0, speaker: 0, angry: 0, bubble: null, broken: 0, cutWires: 0, blackout: 0, showTier: 0, bigT: 0,
     sway: 0, train: { x: -900, v: 0, stop: false, spark: 0 }, moonZoom: 0, moonCrack: 0, earthCrack: 0, earthBoom: 0, encore: 0,
     ufo: null, catState: 'sit', catT: 0, earsCover: 0, clap: 0, shrug: 0, cans: 0, yawn: 0, sing: 0,
     hold: 0, peek: 0, fur: 0, needle: null, susv: null,
   }
   function resetWorld() {
-    Object.assign(V, { level: 0, lvRaw: 0, hype: 0, zoom: 1, camY: 0, shake: 0, flash: 0, dark: 0, redSky: 0, space: 0, dogs: 0, speaker: 0, angry: 0, bubble: null, broken: 0, cutWires: 0, blackout: 0, sway: 0, moonZoom: 0, moonCrack: 0, earthCrack: 0, earthBoom: 0, encore: 0, ufo: null, catState: 'sit', earsCover: 0, clap: 0, shrug: 0, cans: 0, yawn: 0, sing: 0, hold: 0, peek: 0, fur: 0, needle: null, susv: null })
+    Object.assign(V, { level: 0, lvRaw: 0, hype: 0, zoom: 1, camY: 0, shake: 0, flash: 0, dark: 0, redSky: 0, space: 0, dogs: 0, speaker: 0, angry: 0, bubble: null, broken: 0, cutWires: 0, blackout: 0, showTier: 0, bigT: 0, sway: 0, moonZoom: 0, moonCrack: 0, earthCrack: 0, earthBoom: 0, encore: 0, ufo: null, catState: 'sit', earsCover: 0, clap: 0, shrug: 0, cans: 0, yawn: 0, sing: 0, hold: 0, peek: 0, fur: 0, needle: null, susv: null })
     V.rings = []; V.leaves = []; V.parts = []
     V.train = { x: -900, v: 0, stop: false, spark: 0 }
     later.length = 0; tweens.length = 0
@@ -404,8 +404,18 @@
   // 声の輪・葉っぱ・破片
   function drawFx() {
     layer(0)
-    const mx = 6, my = -168
-    for (const r of V.rings) { g.globalAlpha = clamp(r.a, 0, 1); g.strokeStyle = r.c || '#fff8e6'; g.lineWidth = r.w; g.beginPath(); g.arc(mx, my, r.r, 0, 7); g.stroke() }
+    const mx = 1, my = -156
+    // 口の左右に「(( ))」の形で広がる。縁取りで空にも町にも埋もれない
+    g.lineCap = 'round'
+    for (const r of V.rings) {
+      const sp = r.big ? 1.15 : 0.5 + Math.min(0.25, r.r / 400)
+      g.globalAlpha = clamp(r.a, 0, 1)
+      for (const pass of [0, 1]) {
+        g.strokeStyle = pass ? (r.c || '#fff8e6') : 'rgba(35,18,26,.55)'; g.lineWidth = pass ? r.w : r.w + 3
+        g.beginPath(); g.arc(mx, my, r.r, -sp, sp); g.moveTo(mx + Math.cos(Math.PI - sp) * r.r, my + Math.sin(Math.PI - sp) * r.r); g.arc(mx, my, r.r, Math.PI - sp, Math.PI + sp); g.stroke()
+      }
+    }
+    g.lineCap = 'butt'
     g.globalAlpha = 1
     for (const l of V.leaves) { g.save(); g.translate(l.x, l.y); g.rotate(l.rot); ell(0, 0, 5, 2.4); P(l.c, null); g.restore() }
     for (const p of V.parts) {
@@ -583,13 +593,18 @@
     // 声に反応
     const lv = V.level
     if (V.mode === 'sing' || V.mode === 'title' || V.sing > 0) {
-      if (Math.random() < lv * 0.5 && lv > 0.18) V.rings.push({ r: 14, a: 0.9, w: 2 + lv * 5, v: 120 + lv * 260 })
+      // 口から出る声の輪: 声が大きいほど間隔が詰まり、太く速く広がる
+      V.ringT = (V.ringT || 0) + DT
+      if (lv > 0.1 && V.ringT >= 0.34 - lv * 0.22) { V.ringT = 0; V.rings.push({ r: 12, a: 0.95, w: 2 + lv * 5, v: 90 + lv * 240 }) }
+      // 結果では町じゅうへ届く大きな輪（段が上がるほど遠く・太く）
+      const st = V.showTier || 0
+      if (V.mode === 'show' && V.sing > 0 && st > 0) { V.bigT = (V.bigT || 0) + DT; if (V.bigT >= 0.5) { V.bigT = 0; V.rings.push({ r: 24, a: 1, w: 4 + st * 0.7, v: 200 + st * 70, fade: 0.38, big: 1 }) } }
       if (lv > 0.4 && Math.random() < lv * 0.35) V.leaves.push({ x: -200 + rnd(-30, 30), y: -150 + rnd(-30, 30), vx: rnd(40, 140) * (Math.random() < .5 ? 1 : -1) * (0.5 + lv), vy: rnd(-60, 10), rot: rnd(0, 6), vr: rnd(-6, 6), c: pick(['#5e8a3a', '#e8782a', '#a3b04a']) })
       for (const c of V.crows) if (!c.fall) c.hop = lv > 0.5 ? c.hop + DT * 14 * lv : c.hop * 0.9
       V.earsCover += ((lv > 0.62 ? 1 : 0) - V.earsCover) * 0.08
       V.angry = V.mode === 'sing' ? (lv > 0.8 ? Math.min(1, V.angry + 0.05) : Math.max(0, V.angry - 0.01)) : V.angry
     }
-    for (const r of V.rings) { r.r += r.v * DT; r.a -= DT * 1.1 }
+    for (const r of V.rings) { r.r += r.v * DT; r.a -= DT * (r.fade || 1.1) }
     V.rings = V.rings.filter(r => r.a > 0)
     for (const l of V.leaves) { l.x += l.vx * DT; l.y += l.vy * DT; l.vy += 40 * DT; l.rot += l.vr * DT }
     V.leaves = V.leaves.filter(l => l.y < 200 && Math.abs(l.x) < 700).slice(-60)
@@ -617,6 +632,7 @@
     if (!paused) { acc += d; let n = 0; while (acc >= DT && n++ < 8) { stepWorld(); acc -= DT } if (n >= 8) acc = 0 }
     requestAnimationFrame(frame)
     try { render() } catch (e) { if (!frame.err) { frame.err = 1; console.error(e) } }
+    try { drawLive() } catch (e) { if (!frame.errL) { frame.errL = 1; console.error(e) } }
   }
   requestAnimationFrame(frame)
 
@@ -645,7 +661,9 @@
   function idleSinger() { const k = Math.max(0, Math.sin(V.t * 1.3)) ; V.level = 0.08 + k * 0.12 + Math.max(0, Math.sin(V.t * 9)) * 0.05 }
   let singer_ = idleSinger
 
-  function unlockAudio() { const first = !Snd.ctx; Snd.init(); if (first && Snd.ctx) bedOn(V.mode === 'title') }
+  function unlockAudio() { const first = !Snd.ctx; Snd.init(); wakeAudio(); if (first && Snd.ctx) bedOn(V.mode === 'title') }
+  // iPhone ではマイクを使うと AudioContext が interrupted のまま止まる。suspended 以外も起こし直す
+  function wakeAudio() { const c = Snd.ctx; if (!c || window.__muteOk || document.hidden) return; if (c.state !== 'running' && c.state !== 'closed') { window.__wake = (window.__wake || 0) + 1; try { const p = c.resume(); if (p && p.catch) p.catch(() => {}) } catch (e) {} } }
 
   // ---------------- 歌う ----------------
   let request = 'high', mode = 'mic', recBuf = null, lastR = null
@@ -692,6 +710,7 @@
           const db = 10 * Math.log10(s / (d.length / 4) + 1e-12)
           V.lvRaw = clamp((db + 52) / 40, 0, 1)
           if (recording) { pcm.push(new Float32Array(d)); pcmN += d.length }
+          if (V.mode === 'sing') liveFeed(d)
         }
         src.connect(proc); proc.connect(zero); zero.connect(c.destination)
         recNodes = { src, proc, zero }
@@ -705,7 +724,53 @@
     recNodes = null
     if (stream) { for (const t of stream.getTracks()) t.stop(); stream = null }
     try { if (navigator.audioSession) navigator.audioSession.type = 'playback' } catch (e) {}
+    for (const ms of [0, 250, 800, 1600]) setTimeout(wakeAudio, ms)
   }
+  // ---------------- 歌っている間の声の波形（地震計の紙＋いまの声の拡大窓） ----------------
+  let liveCols = [], liveScope = new Float32Array(1024), liveSR = 48000
+  const liveGain = v => Math.sign(v) * Math.min(1, Math.pow(Math.abs(v) * 2.5, 0.7))
+  function liveFeed(d) {
+    const t = (performance.now() - recT0) / 1000
+    let mn = 0, mx = 0; for (let i = 0; i < d.length; i++) { const v = d[i]; if (v < mn) mn = v; else if (v > mx) mx = v }
+    liveCols.push([t, mn, mx])
+    // 上がりのゼロ交差から切り出すと、波の形が止まって見える
+    let st = 0; for (let i = 1; i < d.length - liveScope.length; i++) if (d[i - 1] < 0 && d[i] >= 0) { st = i; break }
+    liveScope.set(d.subarray(st, st + liveScope.length))
+    liveSR = recSR
+  }
+  function liveFinger(t, lv, y) {
+    const a = lv * 0.35 * (0.5 + 0.5 * Math.random()); liveCols.push([t, -a, a])
+    const hz = 140 + (1 - clamp(y / Math.max(1, innerHeight), 0, 1)) * 500
+    for (let i = 0; i < liveScope.length; i++) { const ph = i / liveSR * hz * Math.PI * 2; liveScope[i] = lv * 0.3 * (Math.sin(ph) + 0.35 * Math.sin(ph * 2 + 0.6)) }
+  }
+  function fitCanvas(cv) {
+    const r = Math.min(2, window.devicePixelRatio || 1), w = Math.round(cv.clientWidth * r), h = Math.round(cv.clientHeight * r)
+    if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h }
+    const g = cv.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, w, h); return { g, w, h, r }
+  }
+  function drawLive() {
+    const box = $('liveBox'), on = V.mode === 'sing'
+    if (box.hidden === on) box.hidden = !on
+    if (!on) return
+    // 5秒の帯
+    { const { g, w, h, r } = fitCanvas($('liveWave')), mid = h / 2, amp = h / 2 - 3 * r
+      g.strokeStyle = 'rgba(35,18,26,.25)'; g.lineWidth = r; g.beginPath(); g.moveTo(0, mid); g.lineTo(w, mid); g.stroke()
+      g.strokeStyle = '#c4302b'; g.lineWidth = Math.max(1, 1.6 * r); g.lineCap = 'round'; g.beginPath()
+      let hx = 0
+      for (const [t, mn, mx] of liveCols) { const x = clamp(t / 5, 0, 1) * w; hx = x; g.moveTo(x, mid - liveGain(mx) * amp); g.lineTo(x, mid - liveGain(mn) * amp - 0.5) }
+      g.stroke()
+      const last = liveCols[liveCols.length - 1], py = last ? mid - liveGain(last[2]) * amp : mid
+      g.fillStyle = '#23121a'; g.beginPath(); g.moveTo(hx, py); g.lineTo(hx + 12 * r, py - 7 * r); g.lineTo(hx + 12 * r, py + 7 * r); g.closePath(); g.fill() }
+    // いまの声の形（拡大）
+    { const { g, w, h, r } = fitCanvas($('liveScope')), mid = h / 2
+      let pk = 0; for (let i = 0; i < liveScope.length; i++) { const v = Math.abs(liveScope[i]); if (v > pk) pk = v }
+      const k = (h * 0.36) / Math.max(pk, 0.03), n = Math.min(liveScope.length, Math.round(liveSR * 0.02))
+      g.strokeStyle = 'rgba(35,18,26,.2)'; g.lineWidth = r; g.beginPath(); g.moveTo(0, mid); g.lineTo(w, mid); g.stroke()
+      g.strokeStyle = '#23121a'; g.lineWidth = 2 * r; g.lineJoin = 'round'; g.beginPath()
+      for (let i = 0; i < n; i++) { const x = i / (n - 1) * w, y = mid - liveScope[i] * k; i ? g.lineTo(x, y) : g.moveTo(x, y) }
+      g.stroke() }
+  }
+
   function onFinger() { unlockAudio(); modal('pDenied', false); if (!LS.get('ar_tut')) { modal('pTut', true); pendingStart = 'finger'; return } mode = 'finger'; beginRound() }
 
   // 3-2-1 → 5秒
@@ -731,7 +796,7 @@
   function startRecording() {
     V.mode = 'sing'; $('singCue').textContent = T('sing'); $('singCue').hidden = false
     $('recBar').hidden = false; $('recBar').classList.add('on')
-    recT0 = performance.now(); fingerSamples = []; levelHist = []
+    recT0 = performance.now(); fingerSamples = []; levelHist = []; liveCols = []; liveScope.fill(0)
     if (mode === 'mic') { pcm = []; pcmN = 0; mrChunks = []; recording = true; try { if (mr && mr.state === 'inactive') mr.start() } catch (e) {} }
     let el = 0
     singer_ = dt => {
@@ -740,6 +805,7 @@
         const sp = finger.down ? finger.speed : 0
         fingerSamples.push({ t: el, x: finger.x, y: finger.y, down: finger.down, p: finger.p })
         V.lvRaw = finger.down ? clamp(0.3 + sp / 1600, 0, 1) : 0
+        liveFinger(el, V.lvRaw, finger.y)
         finger.speed *= 0.85
       }
       const target = V.lvRaw
@@ -918,7 +984,7 @@
   let show_ = null
   function telop(s) { const el = $('telop'); el.classList.remove('in'); void el.offsetWidth; $('telopTxt').textContent = s; el.classList.add('in') }
   function runShow(R) {
-    show('vShow'); $('telop').classList.remove('in'); V.mode = 'show'; singer_ = null
+    show('vShow'); $('telop').classList.remove('in'); V.mode = 'show'; singer_ = null; wakeAudio()
     if (Snd.ctx) { Snd.loop('amb', AMB, 0.18) }
     const steps = []
     const at = (t, fn) => steps.push({ t, fn })
@@ -942,7 +1008,10 @@
       const tier = R.tier
       const dur = k => k <= 4 ? 0.8 : k <= 7 ? 1.05 : 1.45
       if (tier === 0) { at(t, () => { telop(D.tiers[0][lang]); V.yawn = 1; Snd.play('cat', { vol: 0.6 }) }); at(t + 0.9, () => { V.catState = 'gone' }); t += 1.8 }
-      for (let k = 1; k <= tier; k++) { const s = t; at(s, () => { telop(D.tiers[k][lang]); EFFECTS[k](R) }); t += dur(k) }
+      V.showTier = tier
+      // カメラはだんだん引いて、声の輪が町に広がっていくのを見せる（6段目からは各場面の引きに任せる）
+      if (tier >= 1) at(0.3, () => zoomTo(0.93, 0.9))
+      for (let k = 1; k <= tier; k++) { const s = t; at(s, () => { telop(D.tiers[k][lang]); EFFECTS[k](R); if (k <= 5) zoomTo(Math.min(V.zoom, 0.93 - 0.05 * k), dur(k) * 0.9) }); t += dur(k) }
       if (R.ufo) { at(t, () => { telop(T('ufo')); V.ufo = { x: 1.2, y: 0.12, tx: 0.62, ty: V.space >= 1 ? 0.62 : 0.2, beam: 0, paper: true }; Snd.play('ufo', { vol: 0.7 }) }); at(t + 0.6, () => { if (V.ufo) V.ufo.beam = 1 }); t += 1.6 }
       if (R.encore) { at(t, () => { telop(T('encore')); Snd.play('clap', { vol: 0.6 }); encoreAnim() }); t += 2.0 }
       t += 0.6
@@ -1090,6 +1159,7 @@
 
   // ---------------- ボタン ----------------
   $('bMic').addEventListener('click', onMic)
+  document.addEventListener('pointerdown', wakeAudio, true)
   $('bFinger').addEventListener('click', onFinger)
   $('bHow').addEventListener('click', () => { unlockAudio(); modal('pHow', true) })
   $('bHow2').addEventListener('click', () => modal('pHow', true))
@@ -1119,7 +1189,7 @@
     skip() { if (sus_) { sus_.skip(); return } if (show_ && show_.next) show_.skip() },
     // 判定の間から結果まで（撮影用）。wave は 0..1 の160点。省くと台本の声
     susWith(over, wave) { stopReplay(); resetWorld(); show_ = null; const f = { dur: 5, actFrac: 1, voicedRatio: 0.8, unsteady: 0.8, devMean: 30, rangeSemis: 20, jumpsPerSec: 2, jitter: 50, harsh: 0.6, loudDb: -8, medianHz: 300, longestSec: 5, riseDb: 0, ...over }; const R = makeResult(f, false); const sus = startSuspense(); const w = wave || Float32Array.from({ length: 160 }, (_, i) => R.kind === 'none' ? 0.02 : clamp(0.35 + 0.4 * Math.abs(Math.sin(i * 0.11)) + 0.2 * Math.sin(i * 0.9), 0, 1)); sus.ready(R, w); return R },
-    get susOn() { return !!sus_ },
+    get susOn() { return !!sus_ }, liveFeed(d) { liveFeed(d) },
     xy(id) { const r = $(id).getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height } },
     postUrl() { return lastR ? postUrl(lastR) : '' }, makeCard: () => lastR && makeCard(lastR), recBufLen: () => recBuf ? recBuf.length : 0,
   }

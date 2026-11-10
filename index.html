@@ -68,7 +68,7 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
 
 /* ---------- 歌う ---------- */
 #vSing{pointer-events:none}
-#recBar{position:absolute;top:max(12px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:6px;background:rgba(20,18,28,.7);color:#fff;font-weight:900;font-size:14px;letter-spacing:.08em}
+#recBar{position:absolute;top:max(12px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:6px;background:rgba(20,18,28,.7);color:#fff;font-weight:900;font-size:14px;letter-spacing:.08em;white-space:nowrap}
 #recBar .dot{width:11px;height:11px;border-radius:50%;background:#e33}
 #recBar.on .dot{animation:blink 1s steps(2) infinite}
 @keyframes blink{50%{opacity:.2}}
@@ -78,6 +78,10 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
 #reqPaper{position:absolute;left:12px;top:calc(max(12px,env(safe-area-inset-top)) + 46px);background:#fbf8f0;padding:7px 10px 8px;transform:rotate(-4deg);box-shadow:0 6px 10px -6px rgba(0,0,0,.6);max-width:46vw}
 #reqPaper b{display:block;font-size:11px;color:var(--sub);font-weight:700}
 #reqPaper span{font-family:var(--hand);font-size:22px;line-height:1.1;color:var(--red)}
+#liveBox{position:absolute;left:12px;right:12px;top:calc(max(12px,env(safe-area-inset-top)) + 124px);height:78px;display:flex;gap:8px;align-items:center;transform:rotate(-1deg)}
+#liveBox[hidden]{display:none}
+#liveWave{flex:1;height:64px;background-color:#fbf8f0;background-image:repeating-linear-gradient(90deg,transparent 0 19px,rgba(196,48,43,.13) 19px 20px),repeating-linear-gradient(0deg,transparent 0 15px,rgba(196,48,43,.10) 15px 16px);box-shadow:0 6px 10px -6px rgba(0,0,0,.6);border-top:3px solid #e9dfc8;border-bottom:3px solid #e9dfc8;min-width:0}
+#liveScope{width:78px;height:78px;flex:none;border-radius:50%;background:#fbf8f0;border:5px solid #23121a;box-shadow:0 4px 0 rgba(0,0,0,.35)}
 #count{position:absolute;left:0;right:0;top:24svh;text-align:center;font-family:var(--hand);font-size:120px;line-height:1;color:#fff;text-shadow:0 4px 0 rgba(0,0,0,.35)}
 #singCue{position:absolute;left:0;right:0;top:20svh;text-align:center;font-family:var(--hand);font-size:52px;color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.4)}
 #fingerTip{position:absolute;left:0;right:0;bottom:calc(max(16px,env(safe-area-inset-bottom)) + 186px);text-align:center;color:#fff;font-weight:900;font-size:16px;text-shadow:0 1px 3px rgba(0,0,0,.8)}
@@ -177,6 +181,7 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
   <div id="recBar"><span class="dot"></span><span id="recTxt">録音中</span><span class="pips"><i></i><i></i><i></i><i></i><i></i></span></div>
   <div id="reqPaper"><b id="reqLbl">今日のリクエスト</b><span id="reqTxt"></span></div>
   <div id="count" hidden>3</div>
+  <div id="liveBox" hidden><canvas id="liveWave"></canvas><canvas id="liveScope"></canvas></div>
   <div id="singCue" hidden></div>
   <p id="fingerTip" hidden></p>
   <button id="bHeart" hidden></button>
@@ -269,7 +274,7 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
 <script src="sfx.js?v=1"></script>
 <script src="analyzer.js?v=3"></script>
 <script src="data.js?v=2"></script>
-<script src="game.js?v=3"></script>
+<script src="game.js?v=4"></script>
 <script src="support.js?v=2" data-ja="のど飴" data-en="a throat lozenge"></script>
 </body>
 </html>
