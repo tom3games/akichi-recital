@@ -663,7 +663,7 @@
 
   function unlockAudio() { const first = !Snd.ctx; Snd.init(); wakeAudio(); if (first && Snd.ctx) bedOn(V.mode === 'title') }
   // iPhone ではマイクを使うと AudioContext が interrupted のまま止まる。suspended 以外も起こし直す
-  function wakeAudio() { const c = Snd.ctx; if (!c || window.__muteOk || document.hidden) return; if (c.state !== 'running' && c.state !== 'closed') { window.__wake = (window.__wake || 0) + 1; try { const p = c.resume(); if (p && p.catch) p.catch(() => {}) } catch (e) {} } }
+  function wakeAudio() { const c = Snd.ctx; if (!c || Snd.away || window.__muteOk || document.hidden) return; if (c.state !== 'running' && c.state !== 'closed') { window.__wake = (window.__wake || 0) + 1; try { const p = c.resume(); if (p && p.catch) p.catch(() => {}) } catch (e) {} } }
 
   // ---------------- 歌う ----------------
   let request = 'high', mode = 'mic', recBuf = null, lastR = null
@@ -1177,7 +1177,6 @@
   $('vSus').addEventListener('pointerdown', e => { e.preventDefault(); if (sus_) sus_.skip() })
   $('bMute').addEventListener('click', () => { muted = !muted; LS.set('ar_mute', muted ? '1' : '0'); Snd.setMute(muted); unlockAudio(); $('muteWave').style.display = muted ? 'none' : ''; $('muteX').hidden = !muted })
   $('muteWave').style.display = muted ? 'none' : ''; $('muteX').hidden = !muted
-  document.addEventListener('visibilitychange', () => { if (document.hidden && Snd.ctx && Snd.ctx.state === 'running' && V.mode !== 'sing') { try { Snd.ctx.suspend() } catch (e) {} } else if (!document.hidden && Snd.ctx && Snd.ctx.state === 'suspended' && !window.__muteOk) { try { Snd.ctx.resume() } catch (e) {} } })
   applyLang()
 
   // ---------------- 検証用の窓口 ----------------
