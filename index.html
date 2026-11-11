@@ -46,7 +46,7 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
 #loadBar i{display:block;height:100%;width:0;background:var(--gold);transition:width .2s}
 
 /* ---------- タイトル: フェンスに結んだ段ボールの看板 ---------- */
-#vTitle{display:flex;flex-direction:column;align-items:center;padding:max(14px,env(safe-area-inset-top)) 16px max(14px,env(safe-area-inset-bottom));pointer-events:none}
+#vTitle{display:flex;flex-direction:column;align-items:center;padding:max(14px,env(safe-area-inset-top)) 16px max(14px,calc(env(safe-area-inset-bottom) + var(--inapp-bot,0px)));pointer-events:none}
 #vTitle>*{pointer-events:auto}
 .sign{position:relative;margin-top:2.5svh;width:min(88vw,360px);padding:14px 14px 12px;background:#c99c62;background-image:repeating-linear-gradient(90deg,rgba(80,50,20,.07) 0 2px,transparent 2px 9px);border-radius:3px;transform:rotate(-2.5deg);box-shadow:0 10px 18px -10px rgba(0,0,0,.6);text-align:center}
 .sign::before,.sign::after{content:"";position:absolute;top:-14px;width:2px;height:22px;background:#3b3530}
@@ -84,8 +84,8 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
 #liveScope{width:78px;height:78px;flex:none;border-radius:50%;background:#fbf8f0;border:5px solid #23121a;box-shadow:0 4px 0 rgba(0,0,0,.35)}
 #count{position:absolute;left:0;right:0;top:24svh;text-align:center;font-family:var(--hand);font-size:120px;line-height:1;color:#fff;text-shadow:0 4px 0 rgba(0,0,0,.35)}
 #singCue{position:absolute;left:0;right:0;top:20svh;text-align:center;font-family:var(--hand);font-size:52px;color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.4)}
-#fingerTip{position:absolute;left:0;right:0;bottom:calc(max(16px,env(safe-area-inset-bottom)) + 186px);text-align:center;color:#fff;font-weight:900;font-size:16px;text-shadow:0 1px 3px rgba(0,0,0,.8)}
-#bHeart{position:absolute;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translateX(-50%);width:170px;height:170px;border-radius:50%;pointer-events:auto;background:radial-gradient(circle at 40% 35%,#ff8a7a,#c4302b 60%,#7d1c19);border:3px solid #23121a;color:#fff;font-weight:900;font-size:18px;box-shadow:0 6px 0 #5d1512;touch-action:none}
+#fingerTip{position:absolute;left:0;right:0;bottom:calc(max(16px,calc(env(safe-area-inset-bottom) + var(--inapp-bot,0px))) + 186px);text-align:center;color:#fff;font-weight:900;font-size:16px;text-shadow:0 1px 3px rgba(0,0,0,.8)}
+#bHeart{position:absolute;left:50%;bottom:max(20px,calc(env(safe-area-inset-bottom) + var(--inapp-bot,0px)));transform:translateX(-50%);width:170px;height:170px;border-radius:50%;pointer-events:auto;background:radial-gradient(circle at 40% 35%,#ff8a7a,#c4302b 60%,#7d1c19);border:3px solid #23121a;color:#fff;font-weight:900;font-size:18px;box-shadow:0 6px 0 #5d1512;touch-action:none}
 #bHeart.down{transform:translateX(-50%) translateY(4px) scale(.97);box-shadow:0 2px 0 #5d1512}
 
 /* ---------- 判定の間: 段ボールの「判定中…」が揺れる ---------- */
@@ -97,7 +97,7 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
 @keyframes susSwing{0%{transform:translateX(-50%) rotate(-4deg)}100%{transform:translateX(-50%) rotate(4deg)}}
 #susSign.droop{animation:none;transform:translateX(-50%) translateY(10px) rotate(16deg);transition:transform .5s cubic-bezier(.3,1.6,.5,1)}
 #susSign.pop{animation:none;transform:translateX(-50%) scale(1.25) rotate(-3deg);opacity:0;transition:transform .2s,opacity .25s .05s}
-#susSkip{position:absolute;right:12px;bottom:max(10px,env(safe-area-inset-bottom));color:rgba(255,255,255,.7);font-size:12px;font-weight:700}
+#susSkip{position:absolute;right:12px;bottom:max(10px,calc(env(safe-area-inset-bottom) + var(--inapp-bot,0px)));color:rgba(255,255,255,.7);font-size:12px;font-weight:700}
 
 /* ---------- 破壊の場面: 速報の帯 ---------- */
 #vShow{pointer-events:auto}
@@ -105,10 +105,10 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
 #telop.in{transform:none}
 #telop b{flex:none;background:var(--red);color:#fff;font-weight:900;font-size:15px;padding:10px 10px;display:flex;align-items:center;letter-spacing:.1em}
 #telop span{flex:1;background:rgba(250,248,242,.96);color:#111;font-weight:900;font-size:clamp(22px,6.6vw,30px);padding:8px 12px;line-height:1.2}
-#skipHint{position:absolute;right:12px;bottom:max(12px,env(safe-area-inset-bottom));color:rgba(255,255,255,.7);font-size:12px;font-weight:700}
+#skipHint{position:absolute;right:12px;bottom:max(12px,calc(env(safe-area-inset-bottom) + var(--inapp-bot,0px)));color:rgba(255,255,255,.7);font-size:12px;font-weight:700}
 
 /* ---------- 結果: 号外 ---------- */
-#vResult{display:flex;flex-direction:column;align-items:center;padding:calc(max(8px,env(safe-area-inset-top)) + 46px) 12px max(10px,env(safe-area-inset-bottom));background:rgba(20,18,30,.55)}
+#vResult{display:flex;flex-direction:column;align-items:center;padding:calc(max(8px,env(safe-area-inset-top)) + 46px) 12px max(10px,calc(env(safe-area-inset-bottom) + var(--inapp-bot,0px)));background:rgba(20,18,30,.55)}
 .paper{position:relative;width:min(100%,400px);background:var(--paper);background-image:repeating-linear-gradient(0deg,rgba(60,40,10,.03) 0 1px,transparent 1px 3px);padding:10px 12px 10px;box-shadow:0 14px 30px -12px rgba(0,0,0,.7);transform:rotate(-1deg);flex:none}
 .mast{display:flex;align-items:center;gap:8px;border-bottom:3px double var(--ink);padding-bottom:5px;padding-right:40px}
 .mast .name{font-family:var(--min);font-weight:800;font-size:20px;letter-spacing:.08em}
@@ -137,6 +137,8 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
 .rrow.small>button{min-height:40px;font-size:14px;background:rgba(242,236,223,.9);border:1.5px solid #23121a}
 .rfoot{display:flex;justify-content:center;gap:14px;font-size:11px}
 @media (max-height:700px){.photo{aspect-ratio:16/6.2}.rbtns{padding-top:6px;gap:5px}}
+/* X のアプリの中で背の低い画面: 下の帯（--inapp-bot）の分だけ号外を詰める */
+@media (max-height:640px){html.inapp-x .photo{aspect-ratio:16/3.8}html.inapp-x #rHead{font-size:24px;margin:4px 0 2px}html.inapp-x .gauges{margin-top:4px;gap:2px 8px}html.inapp-x .rrow>button{min-height:40px}html.inapp-x .rrow.small>button{min-height:36px}html.inapp-x #vResult{padding-top:calc(max(8px,env(safe-area-inset-top)) + 40px)}}
 .rfoot a,.rfoot button{color:rgba(255,255,255,.75);text-decoration:none;font-size:11px;min-height:24px}
 
 /* ---------- 板（遊び方・最初の説明・マイク不可） ---------- */
@@ -275,6 +277,6 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
 <script src="analyzer.js?v=3"></script>
 <script src="data.js?v=2"></script>
 <script src="game.js?v=5"></script>
-<script src="support.js?v=2" data-ja="のど飴" data-en="a throat lozenge"></script>
+<script src="support.js?v=3" data-ja="のど飴" data-en="a throat lozenge"></script>
 </body>
 </html>
